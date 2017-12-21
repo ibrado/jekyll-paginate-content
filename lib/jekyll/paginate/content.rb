@@ -22,7 +22,7 @@ module Jekyll
           :header => sconfig['header'] || '<!--page_header-->',
           :footer => sconfig['footer'] || '<!--page_footer-->',
           :single_page => sconfig['single_page'] || '/view-all/',
-          :use_pager => sconfig['object'].nil? || sconfig['object'] == 'paginate'
+          :use_page => sconfig['use_page'].nil? || sconfig['use_page']
         }
 
         #p_ext = File.extname(permalink)
@@ -293,12 +293,12 @@ module Jekyll
             i += 1
           end
 
-          if @config[:use_pager]
-            pager_data['pages'] = page_list
-            new_part.pager = Pager.new(pager_data)
-          else
+          if @config[:use_page]
             new_part.data['pages'] = page_list
             new_part.data.merge!(pager_data)
+          else
+            pager_data['pages'] = page_list
+            new_part.pager = Pager.new(pager_data)
           end
 
           new_part.content = header + page + footer
@@ -314,22 +314,23 @@ module Jekyll
           copy = Document.new(item, @site, @collection)
         end
 
-        single_page = new_items[0].data['single_page']
         copy_data = {
-          'permalink' => single_page,
-          'view_all' => single_page,
-          'single_page' => single_page,
           'first_page_path' => new_items[0].data['first_page_path'],
           'total_pages' => new_items[0].data['total_pages'],
-          'hidden' => true
         }
+        copy_data['first_path'] = copy_data['first_page_path']
 
-        if @config[:use_pager]
+        if @config[:use_page]
+          copy.data.merge!(copy_data)
+        else
           copy.pager = Pager.new(copy_data)
         end
-        copy.data.merge!(copy_data)
+
+        copy.data['permalink'] = new_items[0].data['single_page']
+        copy.data['hidden'] = true
 
         copy.content = item.content
+
         new_items << copy
 
         @items = new_items
