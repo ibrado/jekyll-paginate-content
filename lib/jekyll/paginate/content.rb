@@ -22,7 +22,8 @@ module Jekyll
           :header => sconfig['header'] || '<!--page_header-->',
           :footer => sconfig['footer'] || '<!--page_footer-->',
           :single_page => sconfig['single_page'] || '/view-all/',
-          :use_page => sconfig['use_page'].nil? || sconfig['use_page']
+          :seo_canonical => !sconfig['seo_canonical'].nil? || sconfig['seo_canonical'],
+          :use_page => !sconfig['use_page'].nil? || sconfig['use_page']
         }
 
         #p_ext = File.extname(permalink)
@@ -124,8 +125,8 @@ module Jekyll
         :last_page_path, :last_path, :next_is_last, :next_page,
         :next_page_path, :next_path, :page, :page_num, :page_path,
         :pages, :paginated, :previous_is_first, :previous_page,
-        :previous_page_path, :previous_path, :single_page, :total_pages
-        :view_all
+        :previous_page_path, :previous_path, :single_page, :seo,
+        :total_pages, :view_all
 
       def initialize(data)
         data.each do |k,v|
@@ -158,6 +159,7 @@ module Jekyll
           'previous_page' => previous_page,
           'previous_page_path' => previous_page_path,
           'previous_path' => previous_path,
+          'seo' => seo,
           'single_page' => single_page,
           'total_pages' => total_pages,
           'view_all' => single_page
@@ -199,10 +201,14 @@ module Jekyll
         dirname = ""
         filename = ""
 
+        site_url = @site.config['canonical'] || @site.config['url']
+        site_url.gsub!(/\/$/, '')
+
         pages.each do |page|
           plink_all = nil
           plink_next = nil
           plink_prev = nil
+          seo = ""
 
           pager_data = {}
 
@@ -293,6 +299,12 @@ module Jekyll
             i += 1
           end
 
+          seo += _seo('canonical', site_url + plink_all, @config[:seo_canonical])
+          seo += _seo('prev', site_url + plink_prev) if plink_prev
+          seo += _seo('next', site_url + plink_next) if plink_next
+
+          pager_data['seo'] = seo
+
           if @config[:use_page]
             new_part.data['pages'] = page_list
             new_part.data.merge!(pager_data)
@@ -316,8 +328,13 @@ module Jekyll
 
         copy_data = {
           'first_page_path' => new_items[0].data['first_page_path'],
-          'total_pages' => new_items[0].data['total_pages'],
+          'total_pages' => new_items[0].data['total_pages']
         }
+
+        permalink = new_items[0].data['single_page']
+        copy_data['seo'] = _seo('canonical', site_url + permalink,
+          @config[:seo_canonical])
+
         copy_data['first_path'] = copy_data['first_page_path']
 
         if @config[:use_page]
@@ -326,7 +343,7 @@ module Jekyll
           copy.pager = Pager.new(copy_data)
         end
 
-        copy.data['permalink'] = new_items[0].data['single_page']
+        copy.data['permalink'] = permalink
         copy.data['hidden'] = true
 
         copy.content = item.content
@@ -337,6 +354,10 @@ module Jekyll
       end
 
       private
+      def _seo(type, url, condition = true)
+        condition ? "  <link rel=\"#{type}\" href=\"#{url}\" />\n" : ""
+      end
+
       def _permalink(base, page)
         return base if page == 1
         (base+@config[:permalink]).gsub(/:num/, page.to_s).gsub(/\/\//, '/')
