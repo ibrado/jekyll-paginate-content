@@ -121,12 +121,12 @@ module Jekyll
 
     class Pager
       attr_accessor :activated, :first_page, :first_page_path,
-        :first_path, :hidden, :is_first, :is_last, :last_page,
-        :last_page_path, :last_path, :next_is_last, :next_page,
-        :next_page_path, :next_path, :page, :page_num, :page_path,
-        :pages, :paginated, :previous_is_first, :previous_page,
-        :previous_page_path, :previous_path, :single_page, :seo,
-        :total_pages, :view_all
+        :first_path, :has_next, :has_previous, :hidden,
+        :is_first, :is_last, :last_page, :last_page_path, :last_path,
+        :next_is_last, :next_page, :next_page_path, :next_path,
+        :page, :page_num, :page_path, :pages, :paginated,
+        :previous_is_first, :previous_page, :previous_page_path,
+        :previous_path, :single_page, :seo, :total_pages, :view_all
 
       def initialize(data)
         data.each do |k,v|
@@ -140,6 +140,8 @@ module Jekyll
           'first_page' => first_page,
           'first_page_path' => first_page_path,
           'first_path' => first_page_path,
+          'has_next' => has_next,
+          'has_previous' => has_previous,
           'hidden' => hidden,
           'is_first' => is_first,
           'is_last' => is_last,
@@ -291,6 +293,9 @@ module Jekyll
 
           pager_data['previous_is_first'] = (num == 2)
           pager_data['next_is_last'] = (num == pages.length - 1)
+
+          pager_data['has_previous'] = (num >= 2)
+          pager_data['has_next'] = (num < pages.length)
 
           page_list = []
           i = 1
