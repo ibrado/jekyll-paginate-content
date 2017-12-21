@@ -2,57 +2,14 @@ require "jekyll/paginate/content/version"
 
 module Jekyll
   module Paginate::Content
-    class Document < Jekyll::Document
-      attr_accessor :pager
-
-      def initialize(orig_doc, site, collection)
-        super(orig_doc.path, { :site => site,
-              :collection => site.collections[collection]})
-        self.merge_data!(orig_doc.data)
-      end
-
-      def data
-        @data ||= {}
-      end
-
-    end
-
-    class Page < Jekyll::Page
-      def initialize(orig_page, site, dirname, filename)
-        @site = site
-        @base = site.source
-        @dir = dirname
-        @name = filename
-
-        self.process(filename)
-        self.data ||= {}
-        self.data.merge!(orig_page.data)
-        self.data['page_dir'] = dirname
-      end
-    end
 
     class Generator < Jekyll::Generator
-      def info(msg)
-        Jekyll.logger.info "ContentPaginator:", msg
-      end
-
-      def warn(msg)
-        Jekyll.logger.warn "ContentPaginator:", msg
-      end
-
-      def debug(msg)
-        Jekyll.logger.info "ContentPaginator:", msg if @debug
-      end
-
       def generate(site)
-        sconfig = site.config['content_paginator'] || {}
+        sconfig = site.config['paginate_content'] || {}
 
         return if !sconfig["enabled"]
 
         @debug = sconfig["debug"]
-
-        #collections = ['posts','pages']
-        #collections = ['pages']
 
         collections = [ sconfig['collection'], sconfig["collections"] ].flatten.compact;
         collections = [ "posts", "pages" ] if collections.empty?
@@ -117,6 +74,48 @@ module Jekyll
 
         end
       end
+
+      private
+      def info(msg)
+        Jekyll.logger.info "PaginateContent:", msg
+      end
+
+      def warn(msg)
+        Jekyll.logger.warn "PaginateContent:", msg
+      end
+
+      def debug(msg)
+        Jekyll.logger.warn "PaginateContent:", msg if @debug
+      end
+    end
+
+    class Document < Jekyll::Document
+      attr_accessor :pager
+
+      def initialize(orig_doc, site, collection)
+        super(orig_doc.path, { :site => site,
+              :collection => site.collections[collection]})
+        self.merge_data!(orig_doc.data)
+      end
+
+      def data
+        @data ||= {}
+      end
+
+    end
+
+    class Page < Jekyll::Page
+      def initialize(orig_page, site, dirname, filename)
+        @site = site
+        @base = site.source
+        @dir = dirname
+        @name = filename
+
+        self.process(filename)
+        self.data ||= {}
+        self.data.merge!(orig_page.data)
+        self.data['page_dir'] = dirname
+      end
     end
 
     class Pager
@@ -130,12 +129,7 @@ module Jekyll
 
       def initialize(data)
         data.each do |k,v|
-          if self.respond_to? k
-            instance_variable_set("@#{k}", v)
-            #puts "SETTING #{k}=#{v}"
-          else
-            #puts "NOT SETTING #{k}"
-          end
+          instance_variable_set("@#{k}", v) if self.respond_to? k
         end
       end
 
@@ -275,18 +269,18 @@ module Jekyll
           new_part.data['single_page'] = pager_data['single_page'] = plink_all
           new_part.data['view_all'] = pager_data['view_all'] = plink_all
 
-          if !first
+          if first
+            pager_data['is_first'] = true
+          else
             pager_data['previous_page'] = num - 1
             pager_data['previous_page_path'] = pager_data['previous_path'] = plink_prev
-          else
-            pager_data['is_first'] = true
           end
 
-          if !last
+          if last
+            pager_data['is_last'] = true
+          else
             pager_data['next_page'] = num + 1
             pager_data['next_page_path'] = pager_data['next_path'] = plink_next
-          else
-            pager_data['is_last'] = true
           end
 
           pager_data['previous_is_first'] = (num == 2)
