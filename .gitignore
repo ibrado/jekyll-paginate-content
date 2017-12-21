@@ -9,3 +9,13 @@
 
 # rspec failure tracking
 .rspec_status
+
+# Swap
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-v][a-z]
+[._]sw[a-p]
+Session.vim
+
+Gemfile.lock
+*.gem

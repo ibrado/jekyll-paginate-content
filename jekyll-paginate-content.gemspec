@@ -6,22 +6,14 @@ require "jekyll/paginate/content/version"
 Gem::Specification.new do |spec|
   spec.name          = "jekyll-paginate-content"
   spec.version       = Jekyll::Paginate::Content::VERSION
-  spec.authors       = ["TODO: Write your name"]
-  spec.email         = ["TODO: Write your email address"]
+  spec.required_ruby_version = '>= 2.0.0'
+  spec.authors       = ["Alex Ibrado"]
+  spec.email         = ["alex@ibrado.org"]
 
-  spec.summary       = %q{TODO: Write a short summary, because RubyGems requires one.}
-  spec.description   = %q{TODO: Write a longer description or delete this line.}
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
+  spec.summary       = %q{PaginateContent: Easily split Jekyll pages, posts, etc. into multiple URLs}
+  spec.description   = %q{This Jekyll plugin splits pages and posts (and other collections/content) into multiple parts/URLs. Just put <!--page--> (configurable) where you want page breaks and the plugin will split the content as many pages as you want. You can then access the pages via e.g. /my-article/2/ or /my-article/page2.html etc. as defined by the permalink option. Features "view-all"/single-page version for SEO; tags for next/previous/first/last page, numeric pager, and more.}
+  spec.homepage      = "https://github.com/ibrado/jekyll-paginate-content"
   spec.license       = "MIT"
-
-  # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
-  # to allow pushing to a single host or delete this section to allow pushing to any host.
-  if spec.respond_to?(:metadata)
-    spec.metadata["allowed_push_host"] = "TODO: Set to 'http://mygemserver.com'"
-  else
-    raise "RubyGems 2.0 or newer is required to protect against " \
-      "public gem pushes."
-  end
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
     f.match(%r{^(test|spec|features)/})
@@ -30,7 +22,7 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
+  spec.add_runtime_dependency "jekyll", "~> 3.0"
+
   spec.add_development_dependency "bundler", "~> 1.16"
-  spec.add_development_dependency "rake", "~> 10.0"
-  spec.add_development_dependency "rspec", "~> 3.0"
 end
