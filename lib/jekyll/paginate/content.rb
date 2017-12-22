@@ -15,7 +15,6 @@ module Jekyll
 
         collections = [ sconfig['collection'], sconfig["collections"] ].flatten.compact.uniq;
         collections = [ "posts", "pages" ] if collections.empty?
-        puts collections.inspect
 
         @config = {
           :collections => collections,
