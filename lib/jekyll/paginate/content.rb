@@ -16,8 +16,11 @@ module Jekyll
 
         @config = {
           :collections => collections,
-          :auto => sconfig['auto'],
+          :title => sconfig['title'],
           :permalink => sconfig['permalink'] || '/:num/',
+          :trail => sconfig['trail'],
+
+          :auto => sconfig['auto'],
           :separator => sconfig['separator'] || '<!--page-->',
           :header => sconfig['header'] || '<!--page_header-->',
           :footer => sconfig['footer'] || '<!--page_footer-->',
@@ -121,10 +124,10 @@ module Jekyll
 
     class Pager
       attr_accessor :activated, :first_page, :first_page_path,
-        :first_path, :has_next, :has_previous, :hidden,
+        :first_path, :has_next, :has_previous, 
         :is_first, :is_last, :last_page, :last_page_path, :last_path,
         :next_is_last, :next_page, :next_page_path, :next_path,
-        :page, :page_num, :page_path, :pages, :paginated,
+        :page_trail, :page_num, :page_path, :pages, :paginated,
         :previous_is_first, :previous_page, :previous_page_path,
         :previous_path, :single_page, :seo, :total_pages, :view_all
 
@@ -136,34 +139,38 @@ module Jekyll
 
       def to_liquid
         {
-          'activated' => paginated,
-          'first_page' => first_page,
-          'first_page_path' => first_page_path,
-          'first_path' => first_page_path,
-          'has_next' => has_next,
-          'has_previous' => has_previous,
-          'hidden' => hidden,
-          'is_first' => is_first,
-          'is_last' => is_last,
-          'last_page' => last_page,
-          'last_page_path' => last_page_path,
-          'last_path' => last_page_path,
-          'next_is_last' => next_is_last,
-          'next_page' => next_page,
-          'next_page_path' => next_page_path,
-          'next_path' => next_page_path,
-          'page' => page_num,
-          'page_num' => page_num,
-          'page_path' => page_path,
           'pages' => pages,
-          'paginated' => paginated,
-          'previous_is_first' => previous_is_first,
+          'total_pages' => total_pages,
+          'page' => page_num,
+          'page_path' => page_path,
           'previous_page' => previous_page,
           'previous_page_path' => previous_page_path,
+          'next_page' => next_page,
+          'next_page_path' => next_page_path,
+          'first_page' => first_page,
+          'first_page_path' => first_page_path,
+          'last_page' => last_page,
+          'last_page_path' => last_page_path,
+          'page_trail' => page_trail,
+
+          'page_num' => page_num,
+          'first_path' => first_page_path,
+          'next_path' => next_page_path,
           'previous_path' => previous_path,
+          'last_path' => last_page_path,
+
+          'activated' => paginated,
+
+          'has_next' => has_next,
+          'has_previous' => has_previous,
+          'is_first' => is_first,
+          'is_last' => is_last,
+          'next_is_last' => next_is_last,
+          'previous_is_first' => previous_is_first,
+          'paginated' => paginated,
+
           'seo' => seo,
           'single_page' => single_page,
-          'total_pages' => total_pages,
           'view_all' => single_page
         }
       end
@@ -212,7 +219,7 @@ module Jekyll
           plink_prev = nil
           seo = ""
 
-          pager_data = {}
+          paginator = {}
 
           first = num == 1
           last = num == pages.length
@@ -236,7 +243,6 @@ module Jekyll
 
           plink_all.gsub!(/\/\//,'/')
 
-
           # TODO: Put these in classes
 
           if @collection == "pages"
@@ -246,7 +252,7 @@ module Jekyll
               page_data = item.data
             end
 
-            pager_data.merge!(page_data)
+            paginator.merge!(page_data)
 
             new_part = Page.new(item, @site, dirname, filename)
 
@@ -261,63 +267,57 @@ module Jekyll
             new_part.data['hidden'] = true
           end
 
-          pager_data['paginated'] = true
+          paginator['paginated'] = true
 
-          pager_data['page_num'] = num
-          pager_data['page_path'] = _permalink(base, num)
+          paginator['page_num'] = num
+          paginator['page_path'] = _permalink(base, num)
 
-          pager_data['first_page'] = 1
-          new_part.data['first_page_path'] = pager_data['first_page_path'] = pager_data['first_path'] = base
+          paginator['first_page'] = 1
+          paginator['first_page_path'] = paginator['first_path'] = base
 
-          pager_data['last_page'] = pages.length
-          pager_data['last_page_path'] = pager_data['last_path'] = _permalink(base, pages.length)
+          paginator['last_page'] = pages.length
+          paginator['last_page_path'] = _permalink(base, pages.length)
 
-          new_part.data['total_pages'] = pager_data['total_pages'] = pages.length
+          paginator['total_pages'] = pages.length
 
-          new_part.data['single_page'] = pager_data['single_page'] = plink_all
-          new_part.data['view_all'] = pager_data['view_all'] = plink_all
+          paginator['single_page'] = plink_all
+          paginator['view_all'] = plink_all
 
           if first
-            pager_data['is_first'] = true
+            paginator['is_first'] = true
           else
-            pager_data['previous_page'] = num - 1
-            pager_data['previous_page_path'] = pager_data['previous_path'] = plink_prev
+            paginator['previous_page'] = num - 1
+            paginator['previous_page_path'] = paginator['previous_path'] = plink_prev
           end
 
           if last
-            pager_data['is_last'] = true
+            paginator['is_last'] = true
           else
-            pager_data['next_page'] = num + 1
-            pager_data['next_page_path'] = pager_data['next_path'] = plink_next
+            paginator['next_page'] = num + 1
+            paginator['next_page_path'] = plink_next
           end
 
-          pager_data['previous_is_first'] = (num == 2)
-          pager_data['next_is_last'] = (num == pages.length - 1)
+          paginator['previous_is_first'] = (num == 2)
+          paginator['next_is_last'] = (num == pages.length - 1)
 
-          pager_data['has_previous'] = (num >= 2)
-          pager_data['has_next'] = (num < pages.length)
+          paginator['has_previous'] = (num >= 2)
+          paginator['has_next'] = (num < pages.length)
 
-          page_list = []
+          page_trail = []
           i = 1
           while i <= pages.length do
-            page_list << [i, _permalink(base, i)]
+            page_trail << [i, _permalink(base, i)]
             i += 1
           end
+          paginator['page_trail'] = page_trail
 
           seo += _seo('canonical', site_url + plink_all, @config[:seo_canonical])
           seo += _seo('prev', site_url + plink_prev) if plink_prev
           seo += _seo('next', site_url + plink_next) if plink_next
+          paginator['seo'] = seo
 
-          pager_data['seo'] = seo
 
-          if @config[:use_page]
-            new_part.data['pages'] = page_list
-            new_part.data.merge!(pager_data)
-          else
-            pager_data['pages'] = page_list
-            new_part.pager = Pager.new(pager_data)
-          end
-
+          new_part.pager = Pager.new(paginator)
           new_part.content = header + page + footer
 
           new_items << new_part
@@ -325,35 +325,33 @@ module Jekyll
           num += 1
         end
 
+        # Exclude the clone of the original since basically a move
+        paginator['pages'] = new_items
+
         if @collection == "pages"
-          copy = Page.new(item, @site, new_items[0].data['page_dir'], item.name)
+          clone = Page.new(item, @site, new_items[0].data['page_dir'], item.name)
         else
-          copy = Document.new(item, @site, @collection)
+          clone = Document.new(item, @site, @collection)
         end
 
-        copy_data = {
+        clone.data['hidden'] = true
+
+        permalink = new_items[0].data['single_page']
+        clone.data['permalink'] = permalink
+
+        clone_paginator = {
           'first_page_path' => new_items[0].data['first_page_path'],
           'total_pages' => new_items[0].data['total_pages']
         }
 
-        permalink = new_items[0].data['single_page']
-        copy_data['seo'] = _seo('canonical', site_url + permalink,
-          @config[:seo_canonical])
+        clone_paginator['seo'] = _seo('canonical',
+          site_url + permalink, @config[:seo_canonical])
 
-        copy_data['first_path'] = copy_data['first_page_path']
+        clone.pager = Pager.new(clone_paginator)
 
-        if @config[:use_page]
-          copy.data.merge!(copy_data)
-        else
-          copy.pager = Pager.new(copy_data)
-        end
+        clone.content = item.content
 
-        copy.data['permalink'] = permalink
-        copy.data['hidden'] = true
-
-        copy.content = item.content
-
-        new_items << copy
+        new_items << clone
 
         @items = new_items
       end
