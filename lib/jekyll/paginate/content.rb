@@ -11,7 +11,7 @@ module Jekyll
 
         @debug = sconfig["debug"]
 
-        sconfig['collection'] = sconfig['collection'].split(/,\s*/) if sconfig['collection']
+        sconfig['collection'] = sconfig['collection'].split(/,\s*/) if sconfig['collection'].is_a?(String)
 
         collections = [ sconfig['collection'], sconfig["collections"] ].flatten.compact.uniq;
         collections = [ "posts", "pages" ] if collections.empty?
@@ -394,6 +394,7 @@ module Jekyll
           if end_page > max
             end_page = max
             start_page = max - before - after
+            start_page = 1 if start_page <= 0
           end
         end
 
