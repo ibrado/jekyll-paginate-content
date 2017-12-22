@@ -25,8 +25,7 @@ module Jekyll
           :header => sconfig['header'] || '<!--page_header-->',
           :footer => sconfig['footer'] || '<!--page_footer-->',
           :single_page => sconfig['single_page'] || '/view-all/',
-          :seo_canonical => !sconfig['seo_canonical'].nil? || sconfig['seo_canonical'],
-          :use_page => !sconfig['use_page'].nil? || sconfig['use_page']
+          :seo_canonical => !sconfig['seo_canonical'].nil? || sconfig['seo_canonical']
         }
 
         #p_ext = File.extname(permalink)
@@ -123,13 +122,14 @@ module Jekyll
     end
 
     class Pager
-      attr_accessor :activated, :first_page, :first_page_path,
-        :first_path, :has_next, :has_previous, 
-        :is_first, :is_last, :last_page, :last_page_path, :last_path,
-        :next_is_last, :next_page, :next_page_path, :next_path,
-        :page_trail, :page_num, :page_path, :pages, :paginated,
-        :previous_is_first, :previous_page, :previous_page_path,
-        :previous_path, :single_page, :seo, :total_pages, :view_all
+      attr_accessor :first_page, :first_page_path, :first_path,
+        :has_next, :has_previous, :is_first, :is_last, :last_page, 
+        :last_page_path, :last_path, :next_is_last, :next_page, 
+        :next_page_path, :next_path, :page, :page_num, 
+        :page_path, :page_trail, :pages, :paginated, 
+        :previous_is_first, :previous_page, :previous_page_path, 
+        :previous_path, :seo, :single_page, :total_pages, 
+        :view_all
 
       def initialize(data)
         data.each do |k,v|
@@ -139,28 +139,22 @@ module Jekyll
 
       def to_liquid
         {
-          'pages' => pages,
-          'total_pages' => total_pages,
-          'page' => page_num,
-          'page_path' => page_path,
-          'previous_page' => previous_page,
-          'previous_page_path' => previous_page_path,
-          'next_page' => next_page,
-          'next_page_path' => next_page_path,
+          # Based on jpv2
           'first_page' => first_page,
           'first_page_path' => first_page_path,
           'last_page' => last_page,
           'last_page_path' => last_page_path,
+          'next_page' => next_page,
+          'next_page_path' => next_page_path,
+          'page' => page_num,
+          'page_path' => page_path,
           'page_trail' => page_trail,
+          'pages' => pages, # was posts; the parts
+          'previous_page' => previous_page,
+          'previous_page_path' => previous_page_path,
+          'total_pages' => total_pages, # parts of the original page
 
-          'page_num' => page_num,
-          'first_path' => first_page_path,
-          'next_path' => next_page_path,
-          'previous_path' => previous_path,
-          'last_path' => last_page_path,
-
-          'activated' => paginated,
-
+          # New stuff
           'has_next' => has_next,
           'has_previous' => has_previous,
           'is_first' => is_first,
@@ -168,9 +162,15 @@ module Jekyll
           'next_is_last' => next_is_last,
           'previous_is_first' => previous_is_first,
           'paginated' => paginated,
-
           'seo' => seo,
           'single_page' => single_page,
+
+          # Aliases
+          'first_path' => first_page_path,
+          'next_path' => next_page_path,
+          'previous_path' => previous_page_path,
+          'last_path' => last_page_path,
+          'page_num' => page_num,
           'view_all' => single_page
         }
       end
@@ -204,7 +204,6 @@ module Jekyll
         footer = page_footer[1] || ''
 
         new_items = []
-        num = 1
         page_data = {}
 
         dirname = ""
@@ -213,13 +212,18 @@ module Jekyll
         site_url = @site.config['canonical'] || @site.config['url']
         site_url.gsub!(/\/$/, '')
 
+        first_page_path = ''
+        total_pages = 0
+        single_page = ''
+
+        num = 1
         pages.each do |page|
           plink_all = nil
           plink_next = nil
           plink_prev = nil
           seo = ""
-
           paginator = {}
+          paginator['pages'] = []
 
           first = num == 1
           last = num == pages.length
@@ -247,13 +251,14 @@ module Jekyll
 
           if @collection == "pages"
             if first
+              # Keep the info of the original page to avoid warnings
+              #   while creating the new virtual pages
               dirname = File.dirname(plink)
               filename = item.name
               page_data = item.data
             end
 
             paginator.merge!(page_data)
-
             new_part = Page.new(item, @site, dirname, filename)
 
           else
@@ -273,7 +278,7 @@ module Jekyll
           paginator['page_path'] = _permalink(base, num)
 
           paginator['first_page'] = 1
-          paginator['first_page_path'] = paginator['first_path'] = base
+          paginator['first_page_path'] = base
 
           paginator['last_page'] = pages.length
           paginator['last_page_path'] = _permalink(base, pages.length)
@@ -281,13 +286,15 @@ module Jekyll
           paginator['total_pages'] = pages.length
 
           paginator['single_page'] = plink_all
-          paginator['view_all'] = plink_all
 
           if first
             paginator['is_first'] = true
+            first_page_path = base
+            total_pages = pages.length
+            single_page = plink_all
           else
             paginator['previous_page'] = num - 1
-            paginator['previous_page_path'] = paginator['previous_path'] = plink_prev
+            paginator['previous_page_path'] =  plink_prev
           end
 
           if last
@@ -306,9 +313,14 @@ module Jekyll
           page_trail = []
           i = 1
           while i <= pages.length do
-            page_trail << [i, _permalink(base, i)]
+            page_trail << {
+              'num' => i, 
+              'path' => _permalink(base, i)
+              #'title' => ''
+            }
             i += 1
           end
+
           paginator['page_trail'] = page_trail
 
           seo += _seo('canonical', site_url + plink_all, @config[:seo_canonical])
@@ -316,17 +328,17 @@ module Jekyll
           seo += _seo('next', site_url + plink_next) if plink_next
           paginator['seo'] = seo
 
-
           new_part.pager = Pager.new(paginator)
           new_part.content = header + page + footer
 
           new_items << new_part
 
+          # Exclude the clone of the original since basically a move
+          paginator['pages'] << new_part
+
           num += 1
         end
 
-        # Exclude the clone of the original since basically a move
-        paginator['pages'] = new_items
 
         if @collection == "pages"
           clone = Page.new(item, @site, new_items[0].data['page_dir'], item.name)
@@ -335,17 +347,15 @@ module Jekyll
         end
 
         clone.data['hidden'] = true
-
-        permalink = new_items[0].data['single_page']
-        clone.data['permalink'] = permalink
+        clone.data['permalink'] = single_page
 
         clone_paginator = {
-          'first_page_path' => new_items[0].data['first_page_path'],
-          'total_pages' => new_items[0].data['total_pages']
+          'first_page_path' => first_page_path,
+          'total_pages' => total_pages
         }
 
         clone_paginator['seo'] = _seo('canonical',
-          site_url + permalink, @config[:seo_canonical])
+          site_url + single_page, @config[:seo_canonical])
 
         clone.pager = Pager.new(clone_paginator)
 
