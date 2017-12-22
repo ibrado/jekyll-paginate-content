@@ -139,7 +139,7 @@ module Jekyll
 
       def to_liquid
         {
-          # Based on jpv2
+          # Based on sverrir's jpv2
           'first_page' => first_page,
           'first_page_path' => first_page_path,
           'last_page' => last_page,
@@ -149,7 +149,7 @@ module Jekyll
           'page' => page_num,
           'page_path' => page_path,
           'page_trail' => page_trail,
-          'pages' => pages, # was posts; the generated parts
+          'pages' => pages,
           'previous_page' => previous_page,
           'previous_page_path' => previous_page_path,
           'total_pages' => total_pages, # parts of the original page
@@ -316,13 +316,19 @@ module Jekyll
           paginator['seo'] = seo
 
           new_part.data['title'] =
-            _title(@config[:title], new_part.data['title'], num, max)
+            _title(@config[:title], new_part.data['title'], num, max, @config[:retitle_first])
 
           new_part.data['permalink'] = plink
           new_part.data['hidden'] = true if num > 1
 
           # Follow jpv2's autogen lead
           new_part.data['autogen_page'] = true
+
+          new_part.data['pagination_info'] =
+            {
+              'curr_page' => num,
+              'total_pages' => max
+            }
 
           new_part.pager = Pager.new(paginator)
           new_part.content = header + page + footer
@@ -367,15 +373,24 @@ module Jekyll
 
         before = config["before"] || 0
         after = config["after"] || 0
-        return page_trail if before.zero? && after.zero?
 
-        start_page = page - before
-        start_page = 1 if start_page <= 0
+        (before <= 0 || before >= max) ? 0 : before
+        (after <= 0 || after >= max) ? 0 : after
 
-        end_page = start_page + before + after
-        if end_page > max
+        #return page_trail if before.zero? && after.zero?
+
+        if before.zero? && after.zero?
+          start_page = 1
           end_page = max
-          start_page = max - before - after
+        else
+          start_page = page - before
+          start_page = 1 if start_page <= 0
+
+          end_page = start_page + before + after
+          if end_page > max
+            end_page = max
+            start_page = max - before - after
+          end
         end
 
         i = start_page
@@ -406,8 +421,8 @@ module Jekyll
           gsub(/\/\//, '/')
       end
 
-      def _title(format, orig, page, max)
-        return orig if !format
+      def _title(format, orig, page, max, retitle_first = false)
+        return orig if !format || (page == 1 && !retitle_first)
 
         format.gsub(/:title/, orig).
           gsub(/:num/, page.to_s).
