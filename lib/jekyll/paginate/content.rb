@@ -11,8 +11,11 @@ module Jekyll
 
         @debug = sconfig["debug"]
 
-        collections = [ sconfig['collection'], sconfig["collections"] ].flatten.compact;
+        sconfig['collection'] = sconfig['collection'].split(/,\s*/) if sconfig['collection']
+
+        collections = [ sconfig['collection'], sconfig["collections"] ].flatten.compact.uniq;
         collections = [ "posts", "pages" ] if collections.empty?
+        puts collections.inspect
 
         @config = {
           :collections => collections,
