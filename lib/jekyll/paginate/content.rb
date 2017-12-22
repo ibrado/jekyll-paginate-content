@@ -18,7 +18,7 @@ module Jekyll
           :collections => collections,
           :title => sconfig['title'],
           :permalink => sconfig['permalink'] || '/:num/',
-          :trail => sconfig['trail'],
+          :trail => sconfig['trail'] || {},
 
           :auto => sconfig['auto'],
           :separator => sconfig['separator'] || '<!--page-->',
@@ -149,7 +149,7 @@ module Jekyll
           'page' => page_num,
           'page_path' => page_path,
           'page_trail' => page_trail,
-          'pages' => pages, # was posts; the parts
+          'pages' => pages, # was posts; the generated parts
           'previous_page' => previous_page,
           'previous_page_path' => previous_page_path,
           'total_pages' => total_pages, # parts of the original page
@@ -217,6 +217,8 @@ module Jekyll
         single_page = ''
 
         num = 1
+        max = pages.length
+
         pages.each do |page|
           plink_all = nil
           plink_next = nil
@@ -226,23 +228,23 @@ module Jekyll
           paginator['pages'] = []
 
           first = num == 1
-          last = num == pages.length
+          last = num == max
 
           #base = item.url.gsub(/\/$/, '')
           base = item.url
 
           if m = base.match(/(.*\/[^\.]*)(\.[^\.]+)$/)
             # /.../filename.ext
-            plink =  _permalink(m[1], num)
-            plink_prev = _permalink(m[1], num-1) if !first
-            plink_next = _permalink(m[1],num+1) if !last
+            plink =  _permalink(m[1], num, max)
+            plink_prev = _permalink(m[1], num-1, max) if !first
+            plink_next = _permalink(m[1],num+1, max) if !last
             plink_all = m[1] + @config[:single_page]
           else
             # /.../folder/
             plink_all = base + @config[:single_page]
-            plink = _permalink(base, num)
-            plink_prev = _permalink(base, num-1) if !first
-            plink_next = _permalink(base, num+1) if !last
+            plink = _permalink(base, num, max)
+            plink_prev = _permalink(base, num-1, max) if !first
+            plink_next = _permalink(base, num+1, max) if !last
           end
 
           plink_all.gsub!(/\/\//,'/')
@@ -267,30 +269,28 @@ module Jekyll
           end
 
           new_part.data['permalink'] = plink
-
-          if num > 1
-            new_part.data['hidden'] = true
-          end
+          new_part.data['hidden'] = true if num > 1
+          # Follow jpv2's autogen lead
+          new_part.data['autogen_page'] = true
 
           paginator['paginated'] = true
-
           paginator['page_num'] = num
-          paginator['page_path'] = _permalink(base, num)
+          paginator['page_path'] = _permalink(base, num, max)
 
           paginator['first_page'] = 1
           paginator['first_page_path'] = base
 
           paginator['last_page'] = pages.length
-          paginator['last_page_path'] = _permalink(base, pages.length)
+          paginator['last_page_path'] = _permalink(base, max, max)
 
-          paginator['total_pages'] = pages.length
+          paginator['total_pages'] = max 
 
           paginator['single_page'] = plink_all
 
           if first
             paginator['is_first'] = true
             first_page_path = base
-            total_pages = pages.length
+            total_pages = max
             single_page = plink_all
           else
             paginator['previous_page'] = num - 1
@@ -305,23 +305,12 @@ module Jekyll
           end
 
           paginator['previous_is_first'] = (num == 2)
-          paginator['next_is_last'] = (num == pages.length - 1)
+          paginator['next_is_last'] = (num == max - 1)
 
           paginator['has_previous'] = (num >= 2)
-          paginator['has_next'] = (num < pages.length)
+          paginator['has_next'] = (num < max)
 
-          page_trail = []
-          i = 1
-          while i <= pages.length do
-            page_trail << {
-              'num' => i, 
-              'path' => _permalink(base, i)
-              #'title' => ''
-            }
-            i += 1
-          end
-
-          paginator['page_trail'] = page_trail
+          paginator['page_trail'] = _page_trail(base, num, max, @config[:trail])
 
           seo += _seo('canonical', site_url + plink_all, @config[:seo_canonical])
           seo += _seo('prev', site_url + plink_prev) if plink_prev
@@ -367,14 +356,48 @@ module Jekyll
       end
 
       private
+      def _page_trail(base, page, max, config)
+        page_trail = []
+
+        before = config["before"] || 0
+        after = config["after"] || 0
+        return page_trail if before.zero? && after.zero?
+
+        start_page = page - before
+        start_page = 1 if start_page <= 0
+
+        end_page = start_page + before + after
+        if end_page > max
+          end_page = max
+          start_page = max - before - after
+        end
+
+        i = start_page
+        while i <= end_page do
+          page_trail << {
+            'num' => i, 
+            'path' => _permalink(base, i, max)
+            #'title' => ''
+          }
+          i += 1
+        end
+
+        page_trail
+      end
+
       def _seo(type, url, condition = true)
         condition ? "  <link rel=\"#{type}\" href=\"#{url}\" />\n" : ""
       end
 
-      def _permalink(base, page)
+      def _permalink(base, page, max)
         return base if page == 1
-        (base+@config[:permalink]).gsub(/:num/, page.to_s).gsub(/\/\//, '/')
+
+        (base + @config[:permalink]).
+          gsub(/:num/, page.to_s).
+          gsub(/:max/, max.to_s).
+          gsub(/\/\//, '/')
       end
+
     end
   end
 end
