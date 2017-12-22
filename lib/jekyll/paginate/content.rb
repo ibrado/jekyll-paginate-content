@@ -224,6 +224,7 @@ module Jekyll
           plink_next = nil
           plink_prev = nil
           seo = ""
+
           paginator = {}
           paginator['pages'] = []
 
@@ -262,16 +263,9 @@ module Jekyll
 
             paginator.merge!(page_data)
             new_part = Page.new(item, @site, dirname, filename)
-
           else
             new_part = Document.new(item, @site, @collection)
-
           end
-
-          new_part.data['permalink'] = plink
-          new_part.data['hidden'] = true if num > 1
-          # Follow jpv2's autogen lead
-          new_part.data['autogen_page'] = true
 
           paginator['paginated'] = true
           paginator['page_num'] = num
@@ -310,12 +304,25 @@ module Jekyll
           paginator['has_previous'] = (num >= 2)
           paginator['has_next'] = (num < max)
 
-          paginator['page_trail'] = _page_trail(base, num, max, @config[:trail])
+          t_config = @config[:trail]
+          t_config[:title] = @config[:title]
+
+          paginator['page_trail'] = _page_trail(base, new_part.data['title'],
+            num, max, t_config)
 
           seo += _seo('canonical', site_url + plink_all, @config[:seo_canonical])
           seo += _seo('prev', site_url + plink_prev) if plink_prev
           seo += _seo('next', site_url + plink_next) if plink_next
           paginator['seo'] = seo
+
+          new_part.data['title'] =
+            _title(@config[:title], new_part.data['title'], num, max)
+
+          new_part.data['permalink'] = plink
+          new_part.data['hidden'] = true if num > 1
+
+          # Follow jpv2's autogen lead
+          new_part.data['autogen_page'] = true
 
           new_part.pager = Pager.new(paginator)
           new_part.content = header + page + footer
@@ -347,7 +354,6 @@ module Jekyll
           site_url + single_page, @config[:seo_canonical])
 
         clone.pager = Pager.new(clone_paginator)
-
         clone.content = item.content
 
         new_items << clone
@@ -356,7 +362,7 @@ module Jekyll
       end
 
       private
-      def _page_trail(base, page, max, config)
+      def _page_trail(base, orig, page, max, config)
         page_trail = []
 
         before = config["before"] || 0
@@ -374,11 +380,13 @@ module Jekyll
 
         i = start_page
         while i <= end_page do
-          page_trail << {
-            'num' => i, 
-            'path' => _permalink(base, i, max)
-            #'title' => ''
-          }
+          title = _title(config[:title], orig, i, max)
+          page_trail << 
+            {
+              'num' => i, 
+              'path' => _permalink(base, i, max),
+              'title' => title
+            }
           i += 1
         end
 
@@ -396,6 +404,14 @@ module Jekyll
           gsub(/:num/, page.to_s).
           gsub(/:max/, max.to_s).
           gsub(/\/\//, '/')
+      end
+
+      def _title(format, orig, page, max)
+        return orig if !format
+
+        format.gsub(/:title/, orig).
+          gsub(/:num/, page.to_s).
+          gsub(/:max/, max.to_s)
       end
 
     end
