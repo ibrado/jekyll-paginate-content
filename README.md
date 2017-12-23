@@ -336,7 +336,7 @@ You may use the following values for properties:
 
 | Value | Meaning
 |-------|--------------------------------------
-| `~`   | `nil` (in essence, disabling the property)
+| `~`   | `nil` (essentially disabling the property)
 | `$`   | The original value of the property
 | `$.property` | The original value of the specified `property`
 | `/`   | Totally remove this property
@@ -381,12 +381,12 @@ For reference, the default properties effectively map out to:
       pagination_info:
         curr_page: /
         total_pages: /
-        type: 'full'
+        type: 'single'
 ```
 
 ### Example
 
-As an example, the author's `_config.yml` has the following:
+The author's `_config.yml` has the following:
 
 ```yaml
   properties:
@@ -420,17 +420,18 @@ As an example, the author's `_config.yml` has the following:
 `x_title` is used to save the original title and use that in social media sharing. The example below also does something similar for the share URL:
 
 ```
+{% if page.x_title %}
+  {% assign share_title = page.x_title %}
+{% else %}
+  {% assign share_title = page.title %}
+{% endif %}
+
 {% if paginator.first_path %}
   {% assign share_url = paginator.first_path %}
 {% else %}
   {% assign share_url = page.url %}
 {% endif %}
 
-{% if page.x_title %}
-  {% assign share_title = page.x_title %}
-{% else %}
-  {% assign share_title = page.title %}
-{% endif %}
 ```
 
 <a name="trails"></a>
@@ -566,7 +567,7 @@ Now that your site features split pages (*finally!*), how do you optimize it for
 
 | Field       | Description
 |-------------|-------------------------------------- 
-| `canonical` | HTML `link rel` of the canonical URL (primary search result for particular content)
+| `canonical` | HTML `link rel` of the canonical URL (primary page for search results)
 | `prev`      | Ditto for the previous page, if applicable
 | `next`      | Ditto for the next page, if applicable
 | `links`     | All of the above, combined
@@ -589,9 +590,18 @@ It will produce up to three lines, like so (assuming you are on page 5):
 
 `rel="prev"` and/or `rel="next"` will not be included if there is no previous and/or next page, respectively. If you don't want to set canonical to the single-view page, just set `seo_canonical` in your `_config.yml` to `false`.
 
+To give your non-paginated content a `canonical` link as well, try this:
+
+```
+{{ paginator.seo.links }}
+{% unless paginator %}
+  <link rel="canonical" href="{{ site.url | append: page.url }}" />
+{% endunless %}
+```
+
 ### Manual
 
-If, however, you include a header file that is also included by files that JPv2 may process, such as your home `index.html`, it would probably be better to do it this way:
+If you include a header file that is also included by files that JPv2 may process, such as your home `index.html`, it would be better to do it this way:
 
 ```html
 {{ paginator.seo.canonical }}
@@ -605,10 +615,14 @@ If, however, you include a header file that is also included by files that JPv2 
   <link rel="next" href="{{ site.url | append: paginator.next_page_path }}" />
 {% endif %}
 ```
-This way it works with JPv2, JPC, and with no paginator active.
+This way it works with JPv2, JPC, and with no paginator active. The author uses this method himself.
 
-What about `canonical` for JPv2-generated pages? Unless you have a "view-all" page that includes all your unpaginated posts and you want search engines to use that huge page as the primary search result, it is probably best to just not put a `canonical` link at all.
+What about `canonical` for JPv2-generated pages? Unless you have a "view-all" page that includes all your unpaginated posts and you want search engines to use that possibly huge page as the primary search result, it is probably best to just not put a `canonical` link at all.
 
+
+## Demo
+
+See the [author's blog](https://ibrado.org/) for a (possible) demo.
 
 ## TODO
 
@@ -616,9 +630,6 @@ What about `canonical` for JPv2-generated pages? Unless you have a "view-all" pa
 1. Automatic splitting based on headers (&lt;h2&gt;, etc.)
 
 
-## Demo
-
-See the [author's blog](https://ibrado.org/) for a (possible) demo.
 
 ## Contributing
 
