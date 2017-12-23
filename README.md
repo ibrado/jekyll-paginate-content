@@ -2,9 +2,9 @@
 
 [![Gem Version](https://badge.fury.io/rb/jekyll-paginate-content.svg)](https://badge.fury.io/rb/jekyll-paginate-content)
 
-*Paginate::Content* is a plugin for [Jekyll](https://jekyllrb.com/) that automatically splits pages, posts, and other content into one or more pages, at points where `<!--page-->` *(configurable)* is inserted. It follows [jekyll-paginate-v2](https://github.com/sverrirs/jekyll-paginate-v2) (JPv2) naming conventions and features, so if you use that, there is almost nothing new to learn.
+*Paginate::Content* is a plugin for [Jekyll](https://jekyllrb.com/) that automatically splits pages, posts, and other content into one or more pages, at points where `<!--page-->` *(configurable)* is inserted. It is heavily influenced by [jekyll-paginate-v2](https://github.com/sverrirs/jekyll-paginate-v2) (JPv2) naming conventions and features, so if you use that, there is almost nothing new to learn.
 
-**Features:** Automatic content splitting, configurable permalinks, page trail, single-page view, SEO support. .
+**Features:** Automatic content splitting into several pages, configurable permalinks, page trail, single-page view, SEO support.
 
 ## tl;dr
 
@@ -15,13 +15,13 @@ layout: page
 paginate: true
 ---
 
-This shows up at the top of all pages.
-
 {% if paginator.paginated %}
   <a href="{{ paginator.single_page }}">View as a single page</a>
 {% elsif paginator %}
   <a href="{{ paginator.first_path }}">View as {{ paginator.total_pages }} pages</a>
 {% endif %}
+
+This shows up at the top of all pages.
 
 <!--page_header-->
 
@@ -30,24 +30,39 @@ This is page 1 of the [Jekyll]::Paginate::Content example.
 
 This is page 2.
 
-{% unless paginator.paginated %}
+{% if paginator.paginated %}
 <p>This won't show up in the single-page view.</p>
 
-<p><a href="{{ paginator.next_page_path }}">Go on to page 3</a></p>
-{% endunless %}
+<p><a href="{{ paginator.next_page_path }}">Go on to page {{ paginator.next_page }}</a></p>
+{% endif %}
+
+<!--page-->
+This is page 3.
+
+<!--page-->
+This is page 4
+
 <!--page-->
 
-This is the last page.
+I have a [link] here in page 5.
+
+<!--page-->
+This is page 6.
+
+<!--page-->
+
+This is the last page ({{ paginator.last }}.
 
 <!--page_footer-->
 This goes into all the pages, too!
 
 [Jekyll]: https://jekyllrb.com/
+[link]: https://ibrado.org/
 ```
 
 ## Why do this?
 
-1. You want to split long posts and articles into multiple pages, e.g. chapters
+1. You want to split long posts and pages/articles into multiple pages, e.g. chapters
 1. That's not enough? :stuck_out_tongue:
 
 ## Installation
@@ -167,44 +182,58 @@ paginate_content:
 
 Note that using `auto` mode will be slower.
 
-## Liquid fields
+## Properties
 
-These fields are available to your layouts and content via the `paginator` object, e.g. `{{ paginator.page }}`. They mimic JPv2's.
+These properties/fields are available to your layouts and content via the `paginator` object, e.g. `{{ paginator.page }}`. They mimic JPv2's.
 
 
-| Field                | Alias           | Description                         |
+| Field                | Aliases         | Description                         |
 |----------------------|-----------------|-------------------------------------|
 | `first_page`         |                 | First page number, i.e. 1           |
 | `first_page_path`    | `first_path`    | Relative URL to the first page      |
 | `next_page`          |                 | Next page number                    |
 | `next_page_path`     | `next_path`     | Relative URL to the next page       |
-| `previous_page`      |                 | Previous page number                |
-| `previous_page_path` | `previous_path` | Relative URL to the previous page   |
+| `previous_page`      | `prev_path`     | Previous page number                |
+| `previous_page_path` | `previous_path`<br/>`prev_path` | Relative URL to the previous page   |
 | `last_page`          |                 | Last page number                    |
 | `last_page_path`     | `last_path`     | Relative URL to the last page       |
 | `page`               | `page_num`      | Current page number                 |
 | `page_path`          |                 | Path to the current page            |
 | `page_trail`         |                 | Page trail, see below               |
-| `pages`              |                 | Page objects that were generated    |
-| `total_pages`        |                 | Total number of pages               |
+| `paginated`          | `activated`     | `true` if this is a partial page    |
+| `total_pages`        | `pages`         | Total number of pages               |
 |                      |                 |                                     |
 | `single_page`        | `view_all`      | Path to the original/full page      |
 | `seo`                |                 | HTML header tags for SEO, see below |
 |                      |                 |                                     |
 | `has_next`           |                 | `true` if there is a next page      |
-| `has_previous`       |                 | `true` if there is a previous page  |
+| `has_previous`       | `has_prev`      | `true` if there is a previous page  |
 | `is_first`           |                 | `true` if this is the first page    |
 | `is_last`            |                 | `true` if this is the last page     |
 | `next_is_last`       |                 | `true` if this page is next-to-last |
-| `previous_is_first`  |                 | `true` if this is the second page   |
-| `paginated`          | `activated`     | `true` if this is a partial page    |
+| `previous_is_first`  | `prev_is_first` | `true` if this is the second page   |
 
-## Page/Post fields
+
+## Page/Post properties
+
+These properties are automatically set for a `page` or `post` that has been processed:
 
 | Field                | Description
 |----------------------|----------------------------------------------------------------------
-| `autogen_page`       | `true` if the `page` or `post` was generated, e.g. `post.autogen_page` ala JPv2's `autogen`
- 
+| `permalink`          | Relative path of the current page
+|                      |
+| `hidden`             | `true` for all pages (including the single-page view) except the first page
+| `tag`, `tags`        | `nil` for all except the first page
+| `category`, `categories` | `nil` for all except the first page
+|                      |
+| `autogen`            | "jekyll-paginate-content" for all but the single-page view
+| `pagination_info`    | `.curr_page` = current page; `.total_pages` = total number of pages
+|                      |
+| `x_jpc`              | "first" for the first page, "part" for the other parts, "full" for the single-page
+
+### Setting custom/override properties
+
+
 
 
 ## Demo
