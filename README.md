@@ -456,14 +456,9 @@ ul.pager li {display: inline;border: 1px solid black; padding: 10px; margin: 5px
 
 You now end up with something like this on page 4:
 
-<ul class="pager">
-  <li><a href="" title="Test 2/7">2</a></li>
-  <li><a href="" title="Test 3/7">3</a></li>
-  <li class="selected"><a href="" title="Test 4/7">4</a></li>
-  <li><a href="" title="Test 5/7">5</a></li>
-  <li><a href="" title="Test 6/7">6</a></li>
-</ul>
-
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ibrado/jekyll-paginate-content/development/res/jpv2-trail.png" />
+</p>
 
 
 
