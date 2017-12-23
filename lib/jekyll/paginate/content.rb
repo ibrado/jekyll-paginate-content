@@ -167,12 +167,13 @@ module Jekyll
 
     class Pager
       attr_accessor :activated, :first_page, :first_page_path,
-        :first_path, :has_next, :has_previous, :is_first,
-        :is_last, :last_page, :last_page_path, :last_path,
-        :next_is_last, :next_page, :next_page_path, :next_path,
-        :page, :page_num, :page_path, :page_trail, :pages,
-        :paginated, :previous_is_first, :previous_page,
-        :previous_page_path, :previous_path, :seo, :single_page,
+        :first_path, :has_next, :has_prev, :has_previous,
+        :is_first, :is_last, :last_page, :last_page_path,
+        :last_path, :next_is_last, :next_page, :next_page_path,
+        :next_path, :page, :page_num, :page_path, :page_trail,
+        :pages, :paginated, :previous_is_first, :prev_is_first,
+        :previous_page, :prev_page :previous_page_path,
+        :previous_path, :prev_path, :seo, :single_page,
         :total_pages, :view_all
 
       def initialize(data)
@@ -212,8 +213,12 @@ module Jekyll
           'activated' => paginated,
           'first_path' => first_page_path,
           'next_path' => next_page_path,
+          'has_prev' => has_prvious,
           'previous_path' => previous_page_path,
+          'prev_path' => previous_page_path,
           'last_path' => last_page_path,
+          'prev_page' => previous_page,
+          'prev_is_first' => previous_is_first,
           'page_num' => page_num,
           'pages' => total_pages,
           'view_all' => single_page
