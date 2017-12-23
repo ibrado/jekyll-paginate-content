@@ -63,6 +63,7 @@ This goes into all the pages, too!
 ## Why do this?
 
 1. You want to split long posts and pages/articles into multiple pages, e.g. chapters
+1. You want more ad revenue. Umm.
 1. That's not enough? :stuck_out_tongue:
 
 ## Installation
@@ -283,7 +284,7 @@ where the properties/fields listed under `all` will be set for all pages, `first
 
 **Example:** To help with your layouts, you may want to set a property for the single-page view, say, activating comments:
 
-```
+```yaml
 paginate_content:
   properties:
     single:
@@ -363,7 +364,7 @@ For reference, the default properties effectively map out to:
 
 As an example, the author's `_config.yml` has the following:
 
-```
+```yaml
   properties:
     all:
       comments: false
@@ -392,10 +393,9 @@ As an example, the author's `_config.yml` has the following:
 `x_tags` and `x_cats` are used in this case to store the original tags and categories for generating a list of related posts only for last pages or single-page views. `comments` and `share` are likewise used to turn on the sections for comments and social media sharing for these pages.
 
 <a name="trails"></a>
-## Making a trail/pager
+## Pagination trails
 
-
-You use the `paginator.page_trail` object to create a pager that will allow your readers to move from page to page. It is set up as follows:
+You use `paginator.page_trail` to create a pager that will allow your readers to move from page to page. It is set up as follows:
 
 ```yaml
 paginate_content:
@@ -406,7 +406,9 @@ paginate_content:
 
 `before` refers to the number of page links you want to appear before the current page; simlarly `after` is the number of page links after the current page. So, in the above example, you have 2 before + 1 current + 2 after = 5 page links in your trail.
 
-Let's say your document has 7 pages. The pager would look something like this as you go from page to page:
+If you don't specify the `trail` properties, or set `before` and `after` to 0, all page links will be made available.
+
+Let's say your document has 7 pages, and you have a `trail` as above. The pager would look something like this as you go from page to page:
 
 <pre><strong>&laquo; <1> [2] [3] [4] [5] &raquo;
 &laquo; [1] <2> [3] [4] [5] &raquo;
@@ -417,8 +419,53 @@ Let's say your document has 7 pages. The pager would look something like this as
 &laquo; [3] [4] [5] [6] <7> &raquo;
 </strong></pre>
 
+`page_trail` has the following fields:
 
-Let's say you have the following
+| Field   | Description
+|---------|-------------------------------------- 
+| `num`   | The page number
+| `path`  | The path to the page
+| `title` | The title of the page
+
+
+Here is an example lifted from [jekyll-paginate-v2's documentation](https://github.com/sverrirs/jekyll-paginate-v2/blob/master/README-GENERATOR.md#creating-pagination-trails):
+
+
+```html
+{% if paginator.page_trail %}
+  {% for trail in paginator.page_trail %}
+    <li {% if page.url == trail.path %}class="selected"{% endif %}>
+        <a href="{{ trail.path | prepend: site.baseurl }}" title="{{trail.title}}">{{ trail.num }}</a>
+    </li>
+  {% endfor %}
+{% endif %}
+```
+
+and its [accompanying CSS](https://github.com/sverrirs/jekyll-paginate-v2/blob/master/examples/03-tags/_layouts/home.html):
+
+```css
+ul.pager { text-align: center; list-style: none; }
+ul.pager li {display: inline;border: 1px solid black; padding: 10px; margin: 5px;}
+.selected { background-color: magenta; }
+```
+<style>
+ul.pager { text-align: center; list-style: none; }
+ul.pager li {display: inline;border: 1px solid black; padding: 10px; margin: 5px;}
+.selected { background-color: magenta; }
+</style>
+
+You now end up with something like this on page 4:
+
+<ul class="pager">
+  <li><a href="" title="Test 2/7">2</a></li>
+  <li><a href="" title="Test 3/7">3</a></li>
+  <li class="selected"><a href="" title="Test 4/7">4</a></li>
+  <li><a href="" title="Test 5/7">5</a></li>
+  <li><a href="" title="Test 6/7">6</a></li>
+</ul>
+
+
+
 
 ## Search Engine Optimization (SEO)
 
