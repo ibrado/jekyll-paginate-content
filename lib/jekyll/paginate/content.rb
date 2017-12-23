@@ -170,7 +170,6 @@ module Jekyll
         self.process(filename)
         self.data ||= {}
         self.data.merge!(orig_page.data)
-        self.data['page_dir'] = dirname
       end
     end
 
@@ -414,7 +413,7 @@ module Jekyll
         # Setup single-page view
 
         if @collection == "pages"
-          single = Page.new(item, @site, new_items[0].data['page_dir'], item.name)
+          single = Page.new(item, @site, dirname, item.name)
         else
           single = Document.new(item, @site, @collection)
         end
