@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["alex@ibrado.org"]
 
   spec.summary       = %q{PaginateContent: Easily split Jekyll pages, posts, etc. into multiple URLs}
-  spec.description   = %q{This Jekyll plugin splits pages and posts (and other collections/content) into multiple parts/URLs. Just put <!--page--> (configurable) where you want page breaks and the plugin will split the content as many pages as you want. You can then access the pages via e.g. /my-article/2/ or /my-article/page2.html etc. as defined by the permalink option. Features "view-all"/single-page version for SEO; tags for next/previous/first/last page, numeric pager, and more.}
+  spec.description   = %q{This Jekyll plugin splits pages and posts (and other collections/content) into multiple parts/URLs. Just put <!--page--> (configurable) where you want page breaks and the plugin will split the content into as many pages as you want. Features: Automatic content splitting into several pages, configurable permalinks, page trail, single-page view, SEO support.}
   spec.homepage      = "https://github.com/ibrado/jekyll-paginate-content"
   spec.license       = "MIT"
 
