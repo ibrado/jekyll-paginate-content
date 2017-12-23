@@ -20,46 +20,40 @@ module Jekyll
         properties = {
           'all' => {
             'autogen' => 'jekyll-paginate-content',
+            'hidden' => true,
+            'tag' => nil,
+            'tags' => nil,
+            'category' => nil,
+            'categories'=> nil,
             'x_jpc' => {
               'type' => 'part'
              }
           },
+
           'first' => {
             'hidden' => false,
+            'tag' => '$',
+            'tags' => '$',
+            'category' => '$',
+            'categories'=> '$',
             'x_jpc' => {
               'type' => 'first'
              }
           },
-          'others' => {
-            'hidden' => true,
-            'tag' => nil,
-            'tags' => nil,
-            'category' => nil,
-            'categories'=> nil
-          },
+
+          'others' => {},
+
           'last' => {
-            'hidden' => true,
-            'tag' => nil,
-            'tags' => nil,
-            'category' => nil,
-            'categories'=> nil,
             'x_jpc' => {
               'type' => 'last'
              }
           },
+
           'single' => {
-            'hidden' => true,
-            'comments' => true,
-            'share' => true,
-            'tag' => nil,
-            'tags' => nil,
-            'category' => nil,
-            'categories'=> nil,
+            'autogen' => nil,
             'x_jpc' => {
               'type' => 'full'
              },
-             # We just moved it, not generated it
-            'autogen' => nil
           }
         }
 
@@ -378,17 +372,22 @@ module Jekyll
           # Set the paginator
           new_part.pager = Pager.new(paginator)
 
-          # Set up the frontmatter properties
-          _set_properties(new_part, 'all', user_props)
-          _set_properties(new_part, 'first', user_props) if first
-          _set_properties(new_part, 'last', user_props) if last
-          _set_properties(new_part, 'others', user_props) if !first && !last
-
           new_part.data['x_jpc']['id'] = id if new_part.data['x_jpc'].is_a?(Hash)
 
+          new_part.data['pagination_info'] =
+            {
+              'curr_page' => num,
+              'total_pages' => max
+            }
+
+          # Set up the frontmatter properties
+          _set_properties(item, new_part, 'all', user_props)
+          _set_properties(item, new_part, 'first', user_props) if first
+          _set_properties(item, new_part, 'last', user_props) if last
+          _set_properties(item, new_part, 'others', user_props) if !first && !last
+
           # Don't allow these to be overriden,
-          # i.e. set/reset layout, date, title,
-          #    permalink, pagination_info
+          # i.e. set/reset layout, date, title, permalink
 
           new_part.data['layout'] = item.data['layout']
           new_part.data['date'] = item.data['date']
@@ -397,12 +396,6 @@ module Jekyll
             _title(@config[:title], new_part.data['title'], num, max, @config[:retitle_first])
 
           new_part.data['permalink'] = plink
-          new_part.data['pagination_info'] =
-            {
-              'curr_page' => num,
-              'total_pages' => max
-            }
-
           new_part.content = header + page + footer
 
           new_items << new_part
@@ -418,8 +411,8 @@ module Jekyll
           single = Document.new(item, @site, @collection)
         end
 
-        _set_properties(single, 'all', user_props)
-        _set_properties(single, 'single', user_props)
+        _set_properties(item, single, 'all', user_props)
+        _set_properties(item, single, 'single', user_props)
 
         single.data['x_jpc']['id'] = id if single.data['x_jpc'].is_a?(Hash)
 
@@ -507,11 +500,12 @@ module Jekyll
           gsub(/:max/, max.to_s)
       end
 
-      def _set_properties(item, stage, override = nil)
-        stage_props = @config[:properties][stage]
+      def _set_properties(original, item, stage, user_props = nil)
+        stage_props = {}
+        stage_props.merge!(@config[:properties][stage])
 
-        if override && override.has_key?(stage)
-          stage_props.merge!(override[stage])
+        if user_props && user_props.has_key?(stage)
+          stage_props.merge!(user_props[stage])
         end
 
         return if stage_props.empty?
@@ -523,7 +517,7 @@ module Jekyll
           else
             if v.is_a?(String) && m = /\$\.?(.*)$/.match(v)
               stage_props[k] = m[1].empty? ?
-                item.data[k] : item.data[m[1]]
+                original.data[k] : original.data[m[1]]
             end
             false
           end
