@@ -60,10 +60,11 @@ This goes into all the pages, too!
 [link]: https://ibrado.org/
 ```
 
-## Why do this?
+## Why use this?
 
-1. You want to split long posts and pages/articles into multiple pages, e.g. chapters
-1. You want more ad revenue. Umm.
+1. You want to split long posts and pages/articles into multiple pages, e.g. chapters;
+1. You want to offer faster loading times to your readers;
+1. You want more ad revenue;
 1. That's not enough? :stuck_out_tongue:
 
 ## Installation
@@ -404,9 +405,9 @@ paginate_content:
     after: 2
 ```
 
-`before` refers to the number of page links you want to appear before the current page; simlarly `after` is the number of page links after the current page. So, in the above example, you have 2 before + 1 current + 2 after = 5 page links in your trail.
+`before` refers to the number of page links you want to appear before the current page; similarly, `after` is the number of page links after the current page. So, in the above example, you have 2 before + 1 current + 2 after = 5 page links in your trail.
 
-If you don't specify the `trail` properties, or set `before` and `after` to 0, all page links will be made available.
+If you don't specify the `trail` properties, or set `before` and `after` to 0, all page links will be returned.
 
 Let's say your document has 7 pages, and you have a `trail` as above. The pager would look something like this as you go from page to page:
 
@@ -419,6 +420,8 @@ Let's say your document has 7 pages, and you have a `trail` as above. The pager 
 &laquo; [3] [4] [5] [6] <7> &raquo;
 </strong></pre>
 
+### Usage
+
 `page_trail` has the following fields:
 
 | Field   | Description
@@ -427,35 +430,38 @@ Let's say your document has 7 pages, and you have a `trail` as above. The pager 
 | `path`  | The path to the page
 | `title` | The title of the page
 
-
 Here is an example lifted from [jekyll-paginate-v2's documentation](https://github.com/sverrirs/jekyll-paginate-v2/blob/master/README-GENERATOR.md#creating-pagination-trails):
 
 
 ```html
 {% if paginator.page_trail %}
+  <ul class="pager">
   {% for trail in paginator.page_trail %}
     <li {% if page.url == trail.path %}class="selected"{% endif %}>
         <a href="{{ trail.path | prepend: site.url }}" title="{{trail.title}}">{{ trail.num }}</a>
     </li>
   {% endfor %}
+  </ul>
 {% endif %}
 ```
 
 and its [accompanying style](https://github.com/sverrirs/jekyll-paginate-v2/blob/master/examples/03-tags/_layouts/home.html):
 
 ```css
-ul.pager { text-align: center; list-style: none; }
-ul.pager li {display: inline;border: 1px solid black; padding: 10px; margin: 5px;}
-.selected { background-color: magenta; }
+<style>
+  ul.pager { text-align: center; list-style: none; }
+  ul.pager li {display: inline;border: 1px solid black; padding: 10px; margin: 5px;}
+  .selected { background-color: magenta; }
+</style>
 ```
 
-You end up with something like this on page 4:
+You end up with something like this, for page 4:
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/ibrado/jekyll-paginate-content/development/res/jpv2-trail.png" />
 </p>
 
-The author's page is a little more involved:
+The author's pager is a little more involved:
 
 ```html
 {% if paginator.page_trail %}
@@ -468,13 +474,13 @@ The author's page is a little more involved:
     {% if paginator.has_previous %}<a href="{{ paginator.previous_path }}">
     {% else %}<span class="pager-inactive">{% endif %}
     <i class="fa fa-backward" aria-hidden="true"></i>
-    {% if paginator.has_previous%}</a> {% else %}</span>{% endif %}
+    {% if paginator.has_previous %}</a>{% else %}</span>{% endif %}
 
     {% for p in paginator.page_trail %}
       {% if p.num  == paginator.page_num %}
-       {{p.num}}
+       {{ p.num }}
       {% else %}
-      <a href="{{p.path}}" data-toggle="tooltip" data-placement="top" title="{{p.title}}">{{p.num}}</a>
+      <a href="{{ p.path }}" data-toggle="tooltip" data-placement="top" title="{{ p.title }}">{{ p.num }}</a>
       {% endif %}
     {% endfor %}
 
@@ -483,14 +489,14 @@ The author's page is a little more involved:
     <i class="fa fa-forward" aria-hidden="true"></i>
     {% if paginator.has_next %}</a>{% else %}</span>{% endif %}
 
-    {% if paginator.is_last%}<span class="pager-inactive">
+    {% if paginator.is_last %}<span class="pager-inactive">
     {% else %}<a href="{{ paginator.last_path }}">{% endif %}
     <i class="fa fa-fast-forward" aria-hidden="true"></i>
-    {% if paginator.is_last%}</span>{% else %}</a>{% endif %}
+    {% if paginator.is_last %}</span>{% else %}</a>{% endif %}
   </div>
 {% endif %}
 ```
-(Sorry for the messy code, it's not quite done yet.)
+*(Sorry for the messy code, it's not quite done yet.)*
 
 This results in a pager that looks like this:
 
@@ -502,6 +508,16 @@ This results in a pager that looks like this:
   <img src="https://raw.githubusercontent.com/ibrado/jekyll-paginate-content/development/res/ajni-trail-p4.png" />
 </p>
 
+Of course, you always have the option of adding some navigational cues to your content:
+
+```html
+{% if paginator.paginated %}
+  <a href="{{ paginator.next_page_path }}">On to the next chapter...</a>
+{% endif %}
+```
+
+This text will not appear in the single-page view.
+
 
 ## Search Engine Optimization (SEO)
 
@@ -509,6 +525,10 @@ This results in a pager that looks like this:
 
 
 
+## TODO
+
+1. Automatic Table of Contents
+1. Automatic splitting based on headers (&lt;h2&gt;, etc.)
 
 
 
