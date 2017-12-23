@@ -435,31 +435,72 @@ Here is an example lifted from [jekyll-paginate-v2's documentation](https://gith
 {% if paginator.page_trail %}
   {% for trail in paginator.page_trail %}
     <li {% if page.url == trail.path %}class="selected"{% endif %}>
-        <a href="{{ trail.path | prepend: site.baseurl }}" title="{{trail.title}}">{{ trail.num }}</a>
+        <a href="{{ trail.path | prepend: site.url }}" title="{{trail.title}}">{{ trail.num }}</a>
     </li>
   {% endfor %}
 {% endif %}
 ```
 
-and its [accompanying CSS](https://github.com/sverrirs/jekyll-paginate-v2/blob/master/examples/03-tags/_layouts/home.html):
+and its [accompanying style](https://github.com/sverrirs/jekyll-paginate-v2/blob/master/examples/03-tags/_layouts/home.html):
 
 ```css
 ul.pager { text-align: center; list-style: none; }
 ul.pager li {display: inline;border: 1px solid black; padding: 10px; margin: 5px;}
 .selected { background-color: magenta; }
 ```
-<style>
-ul.pager { text-align: center; list-style: none; }
-ul.pager li {display: inline;border: 1px solid black; padding: 10px; margin: 5px;}
-.selected { background-color: magenta; }
-</style>
 
-You now end up with something like this on page 4:
+You end up with something like this on page 4:
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/ibrado/jekyll-paginate-content/development/res/jpv2-trail.png" />
 </p>
 
+The author's page is a little more involved:
+
+```html
+{% if paginator.page_trail %}
+  <div class="pager">
+    {% if paginator.is_first %}<span class="pager-inactive">
+    {% else %}<a href="{{ paginator.first_path }}">{% endif %}
+    <i class="fa fa-fast-backward" aria-hidden="true"></i>
+    {% if paginator.is_first %}</span>{% else %}</a>{% endif %}
+
+    {% if paginator.has_previous %}<a href="{{ paginator.previous_path }}">
+    {% else %}<span class="pager-inactive">{% endif %}
+    <i class="fa fa-backward" aria-hidden="true"></i>
+    {% if paginator.has_previous%}</a> {% else %}</span>{% endif %}
+
+    {% for p in paginator.page_trail %}
+      {% if p.num  == paginator.page_num %}
+       {{p.num}}
+      {% else %}
+      <a href="{{p.path}}" data-toggle="tooltip" data-placement="top" title="{{p.title}}">{{p.num}}</a>
+      {% endif %}
+    {% endfor %}
+
+    {% if paginator.has_next %}<a href="{{ paginator.next_path }}">
+    {% else %}<span class="pager-inactive">{% endif %}
+    <i class="fa fa-forward" aria-hidden="true"></i>
+    {% if paginator.has_next %}</a>{% else %}</span>{% endif %}
+
+    {% if paginator.is_last%}<span class="pager-inactive">
+    {% else %}<a href="{{ paginator.last_path }}">{% endif %}
+    <i class="fa fa-fast-forward" aria-hidden="true"></i>
+    {% if paginator.is_last%}</span>{% else %}</a>{% endif %}
+  </div>
+{% endif %}
+```
+(Sorry for the messy code, it's not quite done yet.)
+
+This results in a pager that looks like this:
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ibrado/jekyll-paginate-content/development/res/ajni-trail-p1.png" />
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ibrado/jekyll-paginate-content/development/res/ajni-trail-p4.png" />
+</p>
 
 
 ## Search Engine Optimization (SEO)
