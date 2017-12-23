@@ -2,7 +2,7 @@
 
 [![Gem Version](https://badge.fury.io/rb/jekyll-paginate-content.svg)](https://badge.fury.io/rb/jekyll-paginate-content)
 
-*Paginate::Content* is a plugin for [Jekyll](https://jekyllrb.com/) that automatically splits pages, posts, and other content into one or more pages, at points where `<!--page-->` *(configurable)* is inserted. It is heavily influenced by [jekyll-paginate-v2](https://github.com/sverrirs/jekyll-paginate-v2) (JPv2) naming conventions and features, so if you use that, there is almost nothing new to learn.
+*Paginate::Content* is a plugin for [Jekyll](https://jekyllrb.com/) that automatically splits pages, posts, and other content into one or more pages, at points where `<!--page-->` *(configurable)* is inserted. It mimics [jekyll-paginate-v2](https://github.com/sverrirs/jekyll-paginate-v2) (JPv2) naming conventions and features, so if you use that, there is almost nothing new to learn.
 
 **Features:** Automatic content splitting into several pages, configurable permalinks, page trail, single-page view, SEO support.
 
@@ -184,7 +184,7 @@ Note that using `auto` mode will be slower.
 
 ## Properties
 
-These properties/fields are available to your layouts and content via the `paginator` object, e.g. `{{ paginator.page }}`. They mimic JPv2's.
+These properties/fields are available to your layouts and content via the `paginator` object, e.g. `{{ paginator.page }}`.
 
 
 | Field                | Aliases         | Description                         |
@@ -193,7 +193,7 @@ These properties/fields are available to your layouts and content via the `pagin
 | `first_page_path`    | `first_path`    | Relative URL to the first page      |
 | `next_page`          |                 | Next page number                    |
 | `next_page_path`     | `next_path`     | Relative URL to the next page       |
-| `previous_page`      | `prev_path`     | Previous page number                |
+| `previous_page`      | `prev_page`     | Previous page number                |
 | `previous_page_path` | `previous_path`<br/>`prev_path` | Relative URL to the previous page   |
 | `last_page`          |                 | Last page number                    |
 | `last_page_path`     | `last_path`     | Relative URL to the last page       |
@@ -216,7 +216,7 @@ These properties/fields are available to your layouts and content via the `pagin
 
 ## Page/Post properties
 
-These properties are automatically set for a `page` or `post` that has been processed:
+These properties are automatically set for pages/documents that have been processed, e.g `{{ post.autogen }}`
 
 | Field                | Description
 |----------------------|----------------------------------------------------------------------
@@ -231,10 +231,136 @@ These properties are automatically set for a `page` or `post` that has been proc
 |                      |
 | `x_jpc`              | "first" for the first page, "part" for the other parts, "full" for the single-page
 
-### Setting custom/override properties
+The tags, categories, and `hidden` are set up this way to avoid duplicate counts and having the parts show up in e.g. your tag index listings. You may override this behavior as discussed below.
 
+### Setting custom properties
 
+`paginate_content` in `_config.yml` supports the following options:
 
+```
+paginate_content:
+  properties:
+    all:
+      field1: value1
+      # ...etc...
+    first:
+      field2: value2
+      # ...etc...
+    others:
+      field3: value3
+      # ...etc...
+    last:
+      field4: value4
+      # ...etc...
+    single:
+      field5: value5
+      # ...etc...
+```
+
+where properties/fields listed under `all` will be set for all pages, `first` properties to the first page (possibly overriding values in `all`), etc.
+
+Example: To help with your layouts, you may want to set a property for the single-view page, say, activating comments:
+
+```
+paginate_content:
+  properties:
+    single:
+      comments: true
+```
+
+In your layout, you then use something like
+
+```html
+{% if post.comments %}
+   <!-- Disqus section -->
+{% endif %}
+```
+
+### Overriding properties
+
+You can set almost any frontmatter property via the `properties` section, except for `title`, `layout`, `date`, and `permalink`. Use with caution.
+
+#### Special values
+
+You may use the following values for properties:
+
+| Value | Meaning
+|-------|--------------------------------------
+| `~`   | `nil` (effectively disabling the field)
+| `$`   | The original value of the field
+| `$.property` | The original value of the specified `property`
+| `/`   | Totally remove this property
+ 
+### Default properties
+
+For reference, the default properties map out to:
+
+```yaml
+  properties:
+    all:
+      autogen: 'jekyll-paginate-content'
+      hidden: true
+      tag: ~
+      tags: ~
+      category: ~
+      categories: ~
+      x_jpc:
+        type: 'part'
+
+    first:
+      hidden: false
+      tag: $
+      tags: $
+      category: $
+      categories: $
+      x_jpc:
+        type: 'first'
+
+    #others:
+
+    last:
+      x_jpc:
+        type: 'last'
+
+    single:
+      autogen: ~
+      x_jpc:
+        type: 'full'
+```
+
+### Example
+
+As an example, the author's `_config.yml` has the following:
+
+```
+  properties:
+    #all:
+
+    first:
+      comments: false
+      share: false
+      # keeps original tags and categories
+
+    others:
+      comments: false
+      share: false
+      x_tags: []
+      x_cats: []
+
+    last:
+      comments: true
+      share: true
+      x_tags: $.tags
+      x_cats: $.categories
+
+    single:
+      comments: true
+      share: true
+      x_tags: $.tags
+      x_cats: $.categories
+```
+
+In this case, `x_tags` and `x_cats` are used to store the original tags and categories for generating a list of related posts only for last pages or the single-page views. `comments` and `share` are likewise used to turn on the sections for [Disqus](https://disqus.com/) comments and social media sharing for those pages.
 
 ## Demo
 
