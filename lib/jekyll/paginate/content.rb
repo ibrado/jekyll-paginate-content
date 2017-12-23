@@ -7,7 +7,7 @@ module Jekyll
       def generate(site)
         sconfig = site.config['paginate_content'] || {}
 
-        return if !sconfig["enabled"]
+        return unless sconfig["enabled"].nil? || sconfig["enabled"]
 
         @debug = sconfig["debug"]
 
@@ -35,7 +35,7 @@ module Jekyll
             'categories'=> '$'
           },
 
-          'others' => {},
+          'part' => {},
 
           'last' => {},
 
@@ -363,7 +363,7 @@ module Jekyll
           _set_properties(item, new_part, 'all', user_props)
           _set_properties(item, new_part, 'first', user_props) if first
           _set_properties(item, new_part, 'last', user_props) if last
-          _set_properties(item, new_part, 'others', user_props) if !first && !last
+          _set_properties(item, new_part, 'part', user_props) if !first && !last
 
           # Don't allow these to be overriden,
           # i.e. set/reset layout, date, title, permalink
@@ -402,7 +402,7 @@ module Jekyll
         _set_properties(item, single, 'single', user_props)
 
         single.data['pagination_info'] = {
-          'type' => 'full',
+          'type' => 'single',
           'id' => id
         }
 
