@@ -16,18 +16,60 @@ module Jekyll
         collections = [ sconfig['collection'], sconfig["collections"] ].flatten.compact.uniq;
         collections = [ "posts", "pages" ] if collections.empty?
 
+        # Use this hash syntax to facilite merging _config.yml overrides
+        properties = {
+          'all' => {
+            'autogen' => 'jekyll-paginate-content',
+            'x_jpc' => 'part'
+          },
+          'first' => {
+            'hidden' => false,
+            'x_jpc' => 'first'
+          },
+          'others' => {
+            'hidden' => true,
+            'tag' => nil,
+            'tags' => nil,
+            'category' => nil,
+            'categories'=> nil
+          },
+          'last' => {
+            'hidden' => true,
+            'tag' => nil,
+            'tags' => nil,
+            'category' => nil,
+            'categories'=> nil
+          },
+          'single' => {
+            'hidden' => true,
+            'comments' => true,
+            'share' => true,
+            'tag' => nil,
+            'tags' => nil,
+            'category' => nil,
+            'categories'=> nil,
+            'x_jpc' => 'full',
+             # We just moved it, not generated it
+            'autogen' => nil
+          }
+        }
+
         @config = {
           :collections => collections,
           :title => sconfig['title'],
           :permalink => sconfig['permalink'] || '/:num/',
           :trail => sconfig['trail'] || {},
-
           :auto => sconfig['auto'],
+
           :separator => sconfig['separator'] || '<!--page-->',
           :header => sconfig['header'] || '<!--page_header-->',
           :footer => sconfig['footer'] || '<!--page_footer-->',
+
           :single_page => sconfig['single_page'] || '/view-all/',
-          :seo_canonical => !sconfig['seo_canonical'].nil? || sconfig['seo_canonical']
+          :seo_canonical => sconfig['seo_canonical'].nil? || sconfig['seo_canonical'],
+
+          :properties => properties,
+          :user_props => sconfig['properties'] || {}
         }
 
         #p_ext = File.extname(permalink)
@@ -151,7 +193,6 @@ module Jekyll
           'page' => page_num,
           'page_path' => page_path,
           'page_trail' => page_trail,
-          'pages' => pages,
           'previous_page' => previous_page,
           'previous_page_path' => previous_page_path,
           'total_pages' => total_pages, # parts of the original page
@@ -174,6 +215,7 @@ module Jekyll
           'previous_path' => previous_page_path,
           'last_path' => last_page_path,
           'page_num' => page_num,
+          'pages' => total_pages,
           'view_all' => single_page
         }
       end
@@ -212,8 +254,11 @@ module Jekyll
         dirname = ""
         filename = ""
 
+        # For SEO
         site_url = @site.config['canonical'] || @site.config['url']
         site_url.gsub!(/\/$/, '')
+
+        user_props = @config[:user_props]
 
         first_page_path = ''
         total_pages = 0
@@ -229,12 +274,10 @@ module Jekyll
           seo = ""
 
           paginator = {}
-          paginator['pages'] = []
 
           first = num == 1
           last = num == max
 
-          #base = item.url.gsub(/\/$/, '')
           base = item.url
 
           if m = base.match(/(.*\/[^\.]*)(\.[^\.]+)$/)
@@ -280,7 +323,7 @@ module Jekyll
           paginator['last_page'] = pages.length
           paginator['last_page_path'] = _permalink(base, max, max)
 
-          paginator['total_pages'] = max 
+          paginator['total_pages'] = max
 
           paginator['single_page'] = plink_all
 
@@ -318,54 +361,69 @@ module Jekyll
           seo += _seo('next', site_url + plink_next) if plink_next
           paginator['seo'] = seo
 
+          # Set the paginator
+          new_part.pager = Pager.new(paginator)
+
+          # Set up the frontmatter properties
+          _set_properties(new_part, 'all', user_props)
+          _set_properties(new_part, 'first', user_props) if first
+          _set_properties(new_part, 'last', user_props) if last
+          _set_properties(new_part, 'others', user_props) if !first && !last
+
+          # Don't allow these to be overriden,
+          # i.e. set/reset layout, date, title,
+          #    permalink, pagination_info
+
+          new_part.data['layout'] = item.data['layout']
+          new_part.data['date'] = item.data['date']
+
           new_part.data['title'] =
             _title(@config[:title], new_part.data['title'], num, max, @config[:retitle_first])
 
           new_part.data['permalink'] = plink
-          new_part.data['hidden'] = true if num > 1
-
-          # Follow jpv2's autogen lead
-          new_part.data['autogen_page'] = true
-
           new_part.data['pagination_info'] =
             {
               'curr_page' => num,
               'total_pages' => max
             }
 
-          new_part.pager = Pager.new(paginator)
           new_part.content = header + page + footer
 
           new_items << new_part
 
-          # Exclude the clone of the original since basically a move
-          paginator['pages'] << new_part
-
           num += 1
         end
 
+        # Setup single-page view
 
         if @collection == "pages"
-          clone = Page.new(item, @site, new_items[0].data['page_dir'], item.name)
+          single = Page.new(item, @site, new_items[0].data['page_dir'], item.name)
         else
-          clone = Document.new(item, @site, @collection)
+          single = Document.new(item, @site, @collection)
         end
 
-        clone.data['hidden'] = true
-        clone.data['permalink'] = single_page
+        _set_properties(single, 'all', user_props)
+        _set_properties(single, 'single', user_props)
 
-        clone_paginator = {
+        single.data['permalink'] = single_page
+
+        # Restore original properties for these
+        single.data['layout'] = item.data['layout']
+        single.data['date'] = item.data['date']
+        single.data['title'] = item.data['title']
+
+        # Just some limited data for the single page
+        single_paginator = {
           'first_page_path' => first_page_path,
-          'total_pages' => total_pages
+          'total_pages' => total_pages,
+          'seo' => _seo('canonical', site_url + single_page, 
+                          @config[:seo_canonical])
         }
 
-        clone_paginator['seo'] = _seo('canonical',
-          site_url + single_page, @config[:seo_canonical])
+        single.pager = Pager.new(single_paginator)
+        single.content = item.content
 
-        clone.pager = Pager.new(clone_paginator)
-        clone.content = item.content
-
-        new_items << clone
+        new_items << single
 
         @items = new_items
       end
@@ -379,8 +437,6 @@ module Jekyll
 
         (before <= 0 || before >= max) ? 0 : before
         (after <= 0 || after >= max) ? 0 : after
-
-        #return page_trail if before.zero? && after.zero?
 
         if before.zero? && after.zero?
           start_page = 1
@@ -400,9 +456,9 @@ module Jekyll
         i = start_page
         while i <= end_page do
           title = _title(config[:title], orig, i, max)
-          page_trail << 
+          page_trail <<
             {
-              'num' => i, 
+              'num' => i,
               'path' => _permalink(base, i, max),
               'title' => title
             }
@@ -431,6 +487,33 @@ module Jekyll
         format.gsub(/:title/, orig).
           gsub(/:num/, page.to_s).
           gsub(/:max/, max.to_s)
+      end
+
+      def _set_properties(item, stage, override = nil)
+        stage_props = @config[:properties][stage]
+
+        if override && override.has_key?(stage)
+          stage_props.merge!(override[stage])
+        end
+
+        return if stage_props.empty?
+
+        # Handle special values
+        stage_props.delete_if do |k,v|
+          if v == "/"
+            true
+          elsif v == "$"
+            stage_props[k] = item.data[k]
+            false
+          end
+        end
+
+        if item.respond_to?('merge_data')
+          item.merge_data!(stage_props)
+        else
+          item.data.merge!(stage_props)
+        end
+
       end
 
     end
