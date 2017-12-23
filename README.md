@@ -6,7 +6,32 @@
 
 **Features:** Automatic content splitting into several pages, configurable permalinks, page trail, single-page view, SEO support.
 
-## tl;dr
+- [Jekyll::Paginate::Content](#jekyll--paginate--content)
+  * [TL;DR](#tl-dr)
+  * [Why use this?](#why-use-this-)
+  * [Installation](#installation)
+  * [Configuration](#configuration)
+  * [Usage](#usage)
+  * [Properties](#properties)
+  * [Page/Post properties](#page-post-properties)
+    + [Setting custom properties](#setting-custom-properties)
+    + [Overriding and restoring properties](#overriding-and-restoring-properties)
+      - [Special values](#special-values)
+    + [Default properties](#default-properties)
+    + [Example](#example)
+  * [Pagination trails](#pagination-trails)
+    + [Usage](#usage-1)
+  * [Search Engine Optimization (SEO)](#search-engine-optimization--seo-)
+    + [Automatic](#automatic)
+    + [Manual](#manual)
+  * [TODO](#todo)
+  * [Demo](#demo)
+  * [Contributing](#contributing)
+  * [License](#license)
+  * [Code of Conduct](#code-of-conduct)
+  * [Also by the Author](#also-by-the-author)
+
+## TL;DR
 
 ```markdown
 ---
@@ -618,6 +643,6 @@ The gem is available as open source under the terms of the [MIT License](https:/
 ## Code of Conduct
 Everyone interacting in the Jekyll::Paginate::Content project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/jekyll-paginate-content/blob/master/CODE_OF_CONDUCT.md).
 
-## Also by the author
+## Also by the Author
 
 [Jekyll Tweetsert Plugin](https://github.com/ibrado/jekyll-tweetsert) - Turn tweets into Jekyll posts. Multiple timelines, filters, hashtags, automatic category/tags, and more!
