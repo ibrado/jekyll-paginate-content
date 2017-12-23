@@ -266,7 +266,6 @@ module Jekyll
           plink_all = nil
           plink_next = nil
           plink_prev = nil
-          seo = ""
 
           paginator = {}
 
@@ -351,9 +350,12 @@ module Jekyll
           paginator['page_trail'] = _page_trail(base, new_part.data['title'],
             num, max, t_config)
 
-          seo += _seo('canonical', site_url + plink_all, @config[:seo_canonical])
-          seo += _seo('prev', site_url + plink_prev) if plink_prev
-          seo += _seo('next', site_url + plink_next) if plink_next
+          seo = {}
+          seo['canonical'] =  _seo('canonical', site_url + plink_all) if @config[:seo_canonical];
+          seo['prev'] = _seo('prev', site_url + plink_prev) if plink_prev
+          seo['next'] = _seo('next', site_url + plink_next) if plink_next
+          seo['links'] = seo.map {|k,v| v }.join($/)
+
           paginator['seo'] = seo
 
           # Set the paginator
@@ -414,11 +416,16 @@ module Jekyll
         single.data['title'] = item.data['title']
 
         # Just some limited data for the single page
+        seo = @config[:seo_canonical] ? 
+          _seo('canonical', site_url + single_page) : ""
+
         single_paginator = {
           'first_page_path' => first_page_path,
           'total_pages' => total_pages,
-          'seo' => _seo('canonical', site_url + single_page,
-                          @config[:seo_canonical])
+          'seo' => {
+            'links' => seo,
+            'canonical' => seo
+          }
         }
 
         single.pager = Pager.new(single_paginator)
@@ -469,8 +476,8 @@ module Jekyll
         page_trail
       end
 
-      def _seo(type, url, condition = true)
-        condition ? "  <link rel=\"#{type}\" href=\"#{url}\" />\n" : ""
+      def _seo(type, url)
+        "  <link rel=\"#{type}\" href=\"#{url}\" />"
       end
 
       def _permalink(base, page, max)

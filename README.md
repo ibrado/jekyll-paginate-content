@@ -2,7 +2,7 @@
 
 [![Gem Version](https://badge.fury.io/rb/jekyll-paginate-content.svg)](https://badge.fury.io/rb/jekyll-paginate-content)
 
-*Paginate::Content* is a plugin for [Jekyll](https://jekyllrb.com/) that automatically splits pages, posts, and other content into one or more pages, at points where `<!--page-->` *(configurable)* is inserted. It mimics [jekyll-paginate-v2](https://github.com/sverrirs/jekyll-paginate-v2) (JPv2) naming conventions and features, so if you use that, there is almost nothing new to learn.
+*Jekyll::Paginate::Content* (JPC) is a plugin for [Jekyll](https://jekyllrb.com/) that automatically splits pages, posts, and other content into one or more pages, at points where `<!--page-->` *(configurable)* is inserted. It mimics [jekyll-paginate-v2](https://github.com/sverrirs/jekyll-paginate-v2) (JPv2) naming conventions and features, so if you use that, there is almost nothing new to learn.
 
 **Features:** Automatic content splitting into several pages, configurable permalinks, page trail, single-page view, SEO support.
 
@@ -51,7 +51,6 @@ We're near the last page (page {{ paginator.last_page }}).
 This is page 6.
 
 <!--page-->
-
 This is the last page.
 
 <!--page_footer-->
@@ -62,10 +61,9 @@ This goes into all the pages, too!
 
 ## Why use this?
 
-1. You want to split long posts and pages/articles into multiple pages, e.g. chapters;
+1. You want to split long posts and pages/articles/reviews, etc. into multiple pages, e.g. chapters;
 1. You want to offer faster loading times to your readers;
-1. You want more ad revenue;
-1. That's not enough? :stuck_out_tongue:
+1. You want more ad revenue from your Jekyll site.
 
 ## Installation
 
@@ -134,7 +132,7 @@ paginate_content:
   #  first:
   #    field2: value2
   #    # ...etc...
-  #  others:
+  #  part:
   #    field3: value3
   #     # ...etc...
   #   last:
@@ -179,7 +177,7 @@ paginate_content:
   #properties:
   #  all:
   #  first:
-  #  others:
+  #  part:
   #  last:
   #  single:
 
@@ -230,7 +228,7 @@ These properties/fields are available to your layouts and content via the `pagin
 | `total_pages`        | `pages`         | Total number of pages               |
 |                      |                 |                                     |
 | `single_page`        | `view_all`      | Path to the original/full page      |
-| `seo`                |                 | HTML header tags for SEO, see below |
+| `seo`                |                 | HTML header tags for SEO, see [below](#seo) |
 |                      |                 |                                     |
 | `has_next`           |                 | `true` if there is a next page      |
 | `has_previous`       | `has_prev`      | `true` if there is a previous page  |
@@ -270,7 +268,7 @@ paginate_content:
     first:
       field2: value2
       # ...etc...
-    others:
+    part:
       field3: value3
       # ...etc...
     last:
@@ -292,7 +290,7 @@ paginate_content:
       comments: true
 ```
 
-In your layout, you then use something like
+In your layout, you'd use something like
 
 ```html
 {% if post.comments %}
@@ -313,7 +311,7 @@ You may use the following values for properties:
 
 | Value | Meaning
 |-------|--------------------------------------
-| `~`   | `nil` (effectively disabling the property)
+| `~`   | `nil` (in essence, disabling the property)
 | `$`   | The original value of the property
 | `$.property` | The original value of the specified `property`
 | `/`   | Totally remove this property
@@ -345,7 +343,7 @@ For reference, the default properties effectively map out to:
       pagination_info:
         type: 'first'
 
-    others:
+    part:
       pagination_info:
         type: 'part'
 
@@ -370,11 +368,12 @@ As an example, the author's `_config.yml` has the following:
     all:
       comments: false
       share: false
+      x_title: $.title
 
     #first:
       # keeps original tags and categories
 
-    others:
+    part:
       x_tags: []
       x_cats: []
 
@@ -393,6 +392,22 @@ As an example, the author's `_config.yml` has the following:
 
 `x_tags` and `x_cats` are used in this case to store the original tags and categories for generating a list of related posts only for last pages or single-page views. `comments` and `share` are likewise used to turn on the sections for comments and social media sharing for these pages.
 
+`x_title` is used to save the original title and use that in social media sharing. The example below also does something similar for the share URL:
+
+```
+{% if paginator.first_path %}
+  {% assign share_url = paginator.first_path %}
+{% else %}
+  {% assign share_url = page.url %}
+{% endif %}
+
+{% if page.x_title %}
+  {% assign share_title = page.x_title %}
+{% else %}
+  {% assign share_title = page.title %}
+{% endif %}
+```
+
 <a name="trails"></a>
 ## Pagination trails
 
@@ -405,7 +420,7 @@ paginate_content:
     after: 2
 ```
 
-`before` refers to the number of page links you want to appear before the current page; similarly, `after` is the number of page links after the current page. So, in the above example, you have 2 before + 1 current + 2 after = 5 page links in your trail.
+`before` refers to the number of page links you want to appear before the current page; similarly, `after` is the number of page links after the current page. So, in the above example, you have 2 before + 1 current + 2 after = 5 links to pages in your trail "window".
 
 If you don't specify the `trail` properties, or set `before` and `after` to 0, all page links will be returned.
 
@@ -422,7 +437,7 @@ Let's say your document has 7 pages, and you have a `trail` as above. The pager 
 
 ### Usage
 
-`page_trail` has the following fields:
+`paginator.page_trail` has the following fields:
 
 | Field   | Description
 |---------|-------------------------------------- 
@@ -430,7 +445,7 @@ Let's say your document has 7 pages, and you have a `trail` as above. The pager 
 | `path`  | The path to the page
 | `title` | The title of the page
 
-Here is an example lifted from [jekyll-paginate-v2's documentation](https://github.com/sverrirs/jekyll-paginate-v2/blob/master/README-GENERATOR.md#creating-pagination-trails):
+Here is an example lifted from [JPv2's documentation](https://github.com/sverrirs/jekyll-paginate-v2/blob/master/README-GENERATOR.md#creating-pagination-trails):
 
 
 ```html
@@ -447,7 +462,7 @@ Here is an example lifted from [jekyll-paginate-v2's documentation](https://gith
 
 and its [accompanying style](https://github.com/sverrirs/jekyll-paginate-v2/blob/master/examples/03-tags/_layouts/home.html):
 
-```css
+```html
 <style>
   ul.pager { text-align: center; list-style: none; }
   ul.pager li {display: inline;border: 1px solid black; padding: 10px; margin: 5px;}
@@ -455,13 +470,13 @@ and its [accompanying style](https://github.com/sverrirs/jekyll-paginate-v2/blob
 </style>
 ```
 
-You end up with something like this, for page 4:
+You'll end up with something like this, for page 4:
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/ibrado/jekyll-paginate-content/development/res/jpv2-trail.png" />
 </p>
 
-The author's pager is a little more involved:
+The author's own pager is a little more involved:
 
 ```html
 {% if paginator.page_trail %}
@@ -496,7 +511,6 @@ The author's pager is a little more involved:
   </div>
 {% endif %}
 ```
-*(Sorry for the messy code, it's not quite done yet.)*
 
 This results in a pager that looks like this:
 
@@ -518,11 +532,57 @@ Of course, you always have the option of adding some navigational cues to your c
 
 This text will not appear in the single-page view.
 
-
+<a name="seo"></a>
 ## Search Engine Optimization (SEO)
 
+Now that your site features split pages (*finally!*), how do you optimize it for search engines?
 
+`paginator.seo` has the following fields:
 
+| Field       | Description
+|-------------|-------------------------------------- 
+| `canonical` | HTML `link rel` of the canonical URL (primary search result for particular content)
+| `prev`      | Ditto for the previous page, if applicable
+| `next`      | Ditto for the next page, if applicable
+| `links`     | All of the above, combined
+
+### Automatic
+
+If you have a dedicated HTML header for the content that you paginate, simply add the following somewhere inside the <tt>&lt;head&gt;</tt>:
+
+```
+{{ paginator.seo.links }}
+```
+
+It will produce up to three lines, like so (assuming you are on page 5):
+
+```html
+  <link rel="canonical" href="https://example.com/2017/12/my-post/view-all/" />
+  <link rel="prev" href="https://example.com/2017/12/my-post/4/" />
+  <link rel="next" href="https://example.com/2017/12/my-post/6/" />
+```
+
+`rel="prev"` and/or `rel="next"` will not be included if there is no previous and/or next page, respectively. If you don't want to set canonical to the single-view page, just set `seo_canonical` in your `_config.yml` to `false`.
+
+### Manual
+
+If, however, you include a header file that is also included by files that JPv2 may process, such as your home `index.html`, it would probably be better to do it this way:
+
+```html
+{{ paginator.seo.canonical }}
+{% unless paginator %}
+  <link rel="canonical" href="{{ site.url | append: page.url }}" />
+{% endunless %}
+{% if paginator.previous_page_path %}
+  <link rel="prev" href="{{ site.url | append: paginator.previous_page_path }}" />
+{% endif %}
+{% if paginator.next_page_path %}
+  <link rel="next" href="{{ site.url | append: paginator.next_page_path }}" />
+{% endif %}
+```
+This way it works with JPv2, JPC, and with no paginator active.
+
+What about `canonical` for JPv2-generated pages? Unless you have a "view-all" page that includes all your unpaginated posts and you want search engines to use that huge page as the primary search result, it is probably best to just not put a `canonical` link at all.
 
 
 ## TODO
@@ -531,33 +591,32 @@ This text will not appear in the single-page view.
 1. Automatic splitting based on headers (&lt;h2&gt;, etc.)
 
 
-
 ## Demo
 
 See the [author's blog](https://ibrado.org/) for a (possible) demo.
 
 ## Contributing
 
-1. Fork this project: [https://github.com/ibrado/jekyll-stickyposts/fork](https://github.com/ibrado/jekyll-stickyposts/fork)
-1. Clone it (`git clone git://github.com/your_user_name/jekyll-stickyposts.git`)
-1. `cd jekyll-stickyposts`
+1. Fork this project: [https://github.com/ibrado/jekyll-paginate-content/fork](https://github.com/ibrado/jekyll-paginate-content/fork)
+1. Clone it (`git clone git://github.com/your_user_name/jekyll-paginate-content.git`)
+1. `cd jekyll-paginate-content`
 1. Create a new branch (e.g. `git checkout -b my-bug-fix`)
 1. Make your changes
 1. Commit your changes (`git commit -m "Bug fix"`)
-1. Build it (`gem build jekyll-stickyposts.gemspec`)
-1. Install and test it (`gem install ./jekyll-stickyposts-*.gem`)
+1. Build it (`gem build jekyll-paginate-content.gemspec`)
+1. Install and test it (`gem install ./jekyll-paginate-content-*.gem`)
 1. Repeat from step 5 as necessary
 1. Push the branch (`git push -u origin my-bug-fix`)
-1. Create a Pull Request, making sure to select the proper branch, e.g. `my-bug-fix` (via https://github.com/*your_user_name*/jekyll-stickyposts)
+1. Create a Pull Request, making sure to select the proper branch, e.g. `my-bug-fix` (via https://github.com/your_user_name/jekyll-paginate-content)
 
-Bug reports and pull requests are welcome on GitHub at [https://github.com/ibrado/jekyll-stickyposts](https://github.com/ibrado/jekyll-stickyposts). This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
+Bug reports and pull requests are welcome on GitHub at [https://github.com/ibrado/jekyll-paginate-content](https://github.com/ibrado/jekyll-paginate-content). This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
 
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
 
 ## Code of Conduct
-Everyone interacting in the Jekyll::StickyPosts project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/jekyll-stickyposts/blob/master/CODE_OF_CONDUCT.md).
+Everyone interacting in the Jekyll::Paginate::Content project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/jekyll-paginate-content/blob/master/CODE_OF_CONDUCT.md).
 
 ## Also by the author
 
