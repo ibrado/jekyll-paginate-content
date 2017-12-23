@@ -125,6 +125,23 @@ paginate_content:
 
   seo_canonical: false               # Set link ref="canonical" to the view-all page; default: true
 
+  #properties:                       # Set properties per type of page, see below
+  #  all:
+  #    field1: value1
+  #    # ...etc...
+  #  first:
+  #    field2: value2
+  #    # ...etc...
+  #  others:
+  #    field3: value3
+  #     # ...etc...
+  #   last:
+  #    field4: value4
+  #    # ...etc...
+  #  single:
+  #    field5: value5
+  #    # ...etc...
+
 ```
 
 Here's a cleaned-up version with the defaults:
@@ -156,6 +173,13 @@ paginate_content:
   #  after: 0
 
   #seo_canonical: true
+
+  #properties:
+  #  all:
+  #  first:
+  #  others:
+  #  last:
+  #  single:
 
 ```
 
@@ -227,11 +251,9 @@ These properties are automatically set for pages/documents that have been proces
 | `category`, `categories` | `nil` for all except the first page
 |                      |
 | `autogen`            | "jekyll-paginate-content" for all but the single-page view
-| `pagination_info`    | `.curr_page` = current page; `.total_pages` = total number of pages
-|                      |
-| `x_jpc`              | "first" for the first page, "part" for the other parts, "full" for the single-page
+| `pagination_info`    | `.curr_page` = current page number<br/>`.total_pages` = total number of pages<br/>`.type` = "first", "part", "last", or "single"<br/>`.id` = a string which is the same for all related pages (nanosecond timestamp)
 
-The tags, categories, and `hidden` are set up this way to avoid duplicate counts and having the parts show up in e.g. your tag index listings. You may override this behavior as discussed below.
+The tags, categories, and `hidden` are set up this way to avoid duplicate counts and having the parts show up in e.g. your tag index listings. You may override this behavior as discussed [below](#override).
 
 ### Setting custom properties
 
@@ -257,9 +279,9 @@ paginate_content:
       # ...etc...
 ```
 
-where properties/fields listed under `all` will be set for all pages, `first` properties to the first page (possibly overriding values in `all`), etc.
+where the properties/fields listed under `all` will be set for all pages, `first` properties for the first page (possibly overriding values in `all`), etc.
 
-Example: To help with your layouts, you may want to set a property for the single-view page, say, activating comments:
+**Example:** To help with your layouts, you may want to set a property for the single-page view, say, activating comments:
 
 ```
 paginate_content:
@@ -276,9 +298,12 @@ In your layout, you then use something like
 {% endif %}
 ```
 
-### Overriding properties
+The single-page view would then show the [Disqus](https://disqus.com/) comments section. 
 
-You can set almost any frontmatter property via the `properties` section, except for `title`, `layout`, `date`, and `permalink`. Use with caution.
+<a name="override"></a>
+### Overriding and restoring properties
+
+You can set almost any front-matter property via the `properties` section, except for `title`, `layout`, `date`, `permalink`, and `pagination_info`. Use with caution.
 
 #### Special values
 
@@ -304,8 +329,10 @@ For reference, the default properties map out to:
       tags: ~
       category: ~
       categories: ~
-      x_jpc:
-        type: 'part'
+      pagination_info:
+        curr_page: (a number)
+        total_pages:  (a number)
+        id: '(a string)'
 
     first:
       hidden: false
@@ -313,18 +340,20 @@ For reference, the default properties map out to:
       tags: $
       category: $
       categories: $
-      x_jpc:
+      pagination_info:
         type: 'first'
 
-    #others:
+    others:
+      pagination_info:
+        type: 'part'
 
     last:
-      x_jpc:
+      pagination_info:
         type: 'last'
 
     single:
       autogen: ~
-      x_jpc:
+      pagination_info:
         type: 'full'
 ```
 
@@ -334,16 +363,14 @@ As an example, the author's `_config.yml` has the following:
 
 ```
   properties:
-    #all:
-
-    first:
+    all:
       comments: false
       share: false
+
+    #first:
       # keeps original tags and categories
 
     others:
-      comments: false
-      share: false
       x_tags: []
       x_cats: []
 
@@ -360,7 +387,19 @@ As an example, the author's `_config.yml` has the following:
       x_cats: $.categories
 ```
 
-In this case, `x_tags` and `x_cats` are used to store the original tags and categories for generating a list of related posts only for last pages or the single-page views. `comments` and `share` are likewise used to turn on the sections for [Disqus](https://disqus.com/) comments and social media sharing for those pages.
+`x_tags` and `x_cats` are used in this case to store the original tags and categories for generating a list of related posts only for last pages or single-page views. `comments` and `share` are likewise used to turn on the sections for comments and social media sharing for these pages.
+
+## Making a trail/pager
+
+
+## Search Engine Optimization (SEO)
+
+
+
+
+
+
+
 
 ## Demo
 

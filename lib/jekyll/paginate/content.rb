@@ -24,10 +24,7 @@ module Jekyll
             'tag' => nil,
             'tags' => nil,
             'category' => nil,
-            'categories'=> nil,
-            'x_jpc' => {
-              'type' => 'part'
-             }
+            'categories'=> nil
           },
 
           'first' => {
@@ -35,25 +32,15 @@ module Jekyll
             'tag' => '$',
             'tags' => '$',
             'category' => '$',
-            'categories'=> '$',
-            'x_jpc' => {
-              'type' => 'first'
-             }
+            'categories'=> '$'
           },
 
           'others' => {},
 
-          'last' => {
-            'x_jpc' => {
-              'type' => 'last'
-             }
-          },
+          'last' => {},
 
           'single' => {
-            'autogen' => nil,
-            'x_jpc' => {
-              'type' => 'full'
-             },
+            'autogen' => nil
           }
         }
 
@@ -372,14 +359,6 @@ module Jekyll
           # Set the paginator
           new_part.pager = Pager.new(paginator)
 
-          new_part.data['x_jpc']['id'] = id if new_part.data['x_jpc'].is_a?(Hash)
-
-          new_part.data['pagination_info'] =
-            {
-              'curr_page' => num,
-              'total_pages' => max
-            }
-
           # Set up the frontmatter properties
           _set_properties(item, new_part, 'all', user_props)
           _set_properties(item, new_part, 'first', user_props) if first
@@ -391,11 +370,19 @@ module Jekyll
 
           new_part.data['layout'] = item.data['layout']
           new_part.data['date'] = item.data['date']
+          new_part.data['permalink'] = plink
 
           new_part.data['title'] =
             _title(@config[:title], new_part.data['title'], num, max, @config[:retitle_first])
 
-          new_part.data['permalink'] = plink
+          new_part.data['pagination_info'] =
+            {
+              'curr_page' => num,
+              'total_pages' => max,
+              'type' => first ? 'first' : ( last ? 'last' : 'part'),
+              'id' => id
+            }
+
           new_part.content = header + page + footer
 
           new_items << new_part
@@ -414,7 +401,10 @@ module Jekyll
         _set_properties(item, single, 'all', user_props)
         _set_properties(item, single, 'single', user_props)
 
-        single.data['x_jpc']['id'] = id if single.data['x_jpc'].is_a?(Hash)
+        single.data['pagination_info'] = {
+          'type' => 'full',
+          'id' => id
+        }
 
         single.data['permalink'] = single_page
 
@@ -512,7 +502,9 @@ module Jekyll
 
         # Handle special values
         stage_props.delete_if do |k,v|
-          if v == "/"
+          if k == "pagination_info"
+            false
+          elsif v == "/"
             true
           else
             if v.is_a?(String) && m = /\$\.?(.*)$/.match(v)
