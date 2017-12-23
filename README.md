@@ -408,22 +408,14 @@ paginate_content:
 
 Let's say your document has 7 pages. The pager would look something like this as you go from page to page:
 
-```
-&laquo; <1> [2] [3] [4] [5] &raquo;
-
+<pre><strong>&laquo; <1> [2] [3] [4] [5] &raquo;
 &laquo; [1] <2> [3] [4] [5] &raquo;
-
 &laquo; [1] [2] <3> [4] [5] &raquo;
-
 &laquo; [2] [3] <4> [5] [6] &raquo;
-
 &laquo; [3] [4] <5> [6] [7] &raquo;
-
 &laquo; [3] [4] [5] <6> [7] &raquo;
-
 &laquo; [3] [4] [5] [6] <7> &raquo;
-```
-
+</strong></pre>
 
 
 Let's say you have the following
