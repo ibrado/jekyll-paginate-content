@@ -10,7 +10,7 @@
 
 ```markdown
 ---
-title: My title
+title: JPC demo
 layout: page
 paginate: true
 ---
@@ -24,10 +24,9 @@ paginate: true
 This shows up at the top of all pages.
 
 <!--page_header-->
+This is page 1 of the JPC example.
 
-This is page 1 of the [Jekyll]::Paginate::Content example.
 <!--page-->
-
 This is page 2.
 
 {% if paginator.paginated %}
@@ -40,23 +39,24 @@ This is page 2.
 This is page 3.
 
 <!--page-->
-This is page 4
+This is page 4.
 
 <!--page-->
-
 I have a [link] here in page 5.
+{% if paginator.paginated %}
+We're near the last page (page {{ paginator.last_page }}).
+{% endif %}
 
 <!--page-->
 This is page 6.
 
 <!--page-->
 
-This is the last page ({{ paginator.last }}.
+This is the last page.
 
 <!--page_footer-->
 This goes into all the pages, too!
 
-[Jekyll]: https://jekyllrb.com/
 [link]: https://ibrado.org/
 ```
 
@@ -100,7 +100,7 @@ paginate_content:
     - articles
 
   auto: true                         # Set to true to search for the page separator even if you
-                                     #   don't set paginate: true in the frontmatter
+                                     #   don't set paginate: true in the front-matter
                                      #   NOTE: This is slower. Default: false
 
   separator: "<!--split-->"          # The page separator; default: "<!--page-->"
@@ -186,7 +186,7 @@ paginate_content:
 
 ## Usage
 
-Just add a `paginate: true` entry to your frontmatter:
+Just add a `paginate: true` entry to your front-matter:
 
 ```yaml
 ---
@@ -223,7 +223,7 @@ These properties/fields are available to your layouts and content via the `pagin
 | `last_page_path`     | `last_path`     | Relative URL to the last page       |
 | `page`               | `page_num`      | Current page number                 |
 | `page_path`          |                 | Path to the current page            |
-| `page_trail`         |                 | Page trail, see below               |
+| `page_trail`         |                 | Page trail, see [below](#trails)    |
 | `paginated`          | `activated`     | `true` if this is a partial page    |
 | `total_pages`        | `pages`         | Total number of pages               |
 |                      |                 |                                     |
@@ -257,9 +257,9 @@ The tags, categories, and `hidden` are set up this way to avoid duplicate counts
 
 ### Setting custom properties
 
-`paginate_content` in `_config.yml` supports the following options:
+`paginate_content` in `_config.yml` has a `properties` option:
 
-```
+```yaml
 paginate_content:
   properties:
     all:
@@ -311,14 +311,14 @@ You may use the following values for properties:
 
 | Value | Meaning
 |-------|--------------------------------------
-| `~`   | `nil` (effectively disabling the field)
-| `$`   | The original value of the field
+| `~`   | `nil` (effectively disabling the property)
+| `$`   | The original value of the property
 | `$.property` | The original value of the specified `property`
 | `/`   | Totally remove this property
  
 ### Default properties
 
-For reference, the default properties map out to:
+For reference, the default properties effectively map out to:
 
 ```yaml
   properties:
@@ -354,6 +354,8 @@ For reference, the default properties map out to:
     single:
       autogen: ~
       pagination_info:
+        curr_page: /
+        total_pages: /
         type: 'full'
 ```
 
@@ -389,8 +391,41 @@ As an example, the author's `_config.yml` has the following:
 
 `x_tags` and `x_cats` are used in this case to store the original tags and categories for generating a list of related posts only for last pages or single-page views. `comments` and `share` are likewise used to turn on the sections for comments and social media sharing for these pages.
 
+<a name="trails"></a>
 ## Making a trail/pager
 
+
+You use the `paginator.page_trail` object to create a pager that will allow your readers to move from page to page. It is set up as follows:
+
+```yaml
+paginate_content:
+  trail:
+    before: 2
+    after: 2
+```
+
+`before` refers to the number of page links you want to appear before the current page; simlarly `after` is the number of page links after the current page. So, in the above example, you have 2 before + 1 current + 2 after = 5 page links in your trail.
+
+Let's say your document has 7 pages. The pager would look something like this as you go from page to page:
+
+&laquo; <1> [2] [3] [4] [5] &raquo;
+
+&laquo; [1] <2> [3] [4] [5] &raquo;
+
+&laquo; [1] [2] <3> [4] [5] &raquo;
+
+&laquo; [2] [3] <4> [5] [6] &raquo;
+
+&laquo; [3] [4] <5> [6] [7] &raquo;
+
+&laquo; [3] [4] [5] <6> [7] &raquo;
+
+&laquo; [3] [4] [5] [6] <7> &raquo;
+
+
+
+
+Let's say you have the following
 
 ## Search Engine Optimization (SEO)
 
