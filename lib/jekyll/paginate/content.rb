@@ -20,11 +20,15 @@ module Jekyll
         properties = {
           'all' => {
             'autogen' => 'jekyll-paginate-content',
-            'x_jpc' => 'part'
+            'x_jpc' => {
+              'type' => 'part'
+             }
           },
           'first' => {
             'hidden' => false,
-            'x_jpc' => 'first'
+            'x_jpc' => {
+              'type' => 'first'
+             }
           },
           'others' => {
             'hidden' => true,
@@ -38,7 +42,10 @@ module Jekyll
             'tag' => nil,
             'tags' => nil,
             'category' => nil,
-            'categories'=> nil
+            'categories'=> nil,
+            'x_jpc' => {
+              'type' => 'last'
+             }
           },
           'single' => {
             'hidden' => true,
@@ -48,7 +55,9 @@ module Jekyll
             'tags' => nil,
             'category' => nil,
             'categories'=> nil,
-            'x_jpc' => 'full',
+            'x_jpc' => {
+              'type' => 'full'
+             },
              # We just moved it, not generated it
             'autogen' => nil
           }
@@ -268,6 +277,7 @@ module Jekyll
         first_page_path = ''
         total_pages = 0
         single_page = ''
+        id = ("%10.9f" % Time.now.to_f).to_s
 
         num = 1
         max = pages.length
@@ -375,6 +385,8 @@ module Jekyll
           _set_properties(new_part, 'last', user_props) if last
           _set_properties(new_part, 'others', user_props) if !first && !last
 
+          new_part.data['x_jpc']['id'] = id if new_part.data['x_jpc'].is_a?(Hash)
+
           # Don't allow these to be overriden,
           # i.e. set/reset layout, date, title,
           #    permalink, pagination_info
@@ -410,6 +422,8 @@ module Jekyll
         _set_properties(single, 'all', user_props)
         _set_properties(single, 'single', user_props)
 
+        single.data['x_jpc']['id'] = id if single.data['x_jpc'].is_a?(Hash)
+
         single.data['permalink'] = single_page
 
         # Restore original properties for these
@@ -421,7 +435,7 @@ module Jekyll
         single_paginator = {
           'first_page_path' => first_page_path,
           'total_pages' => total_pages,
-          'seo' => _seo('canonical', site_url + single_page, 
+          'seo' => _seo('canonical', site_url + single_page,
                           @config[:seo_canonical])
         }
 
