@@ -2,12 +2,14 @@
 
 [![Gem Version](https://badge.fury.io/rb/jekyll-paginate-content.svg)](https://badge.fury.io/rb/jekyll-paginate-content)
 
-*Jekyll::Paginate::Content* (JPC) is a plugin for [Jekyll](https://jekyllrb.com/) that automatically splits pages, posts, and other content into one or more pages, at points where `<!--page-->` *(configurable)* is inserted. It mimics [jekyll-paginate-v2](https://github.com/sverrirs/jekyll-paginate-v2) (JPv2) naming conventions and features, so if you use that, there is almost nothing new to learn.
+*Jekyll::Paginate::Content* (JPC) is a plugin for [Jekyll](https://jekyllrb.com/) that automatically splits pages, posts, and other content into one or more pages. These can be at points where e.g. `<!--page-->` is inserted, or at &lt;h1&gt; to &lt;h6&gt;. It mimics [jekyll-paginate-v2](https://github.com/sverrirs/jekyll-paginate-v2) (JPv2) naming conventions and features, so if you use that, there is almost nothing new to learn.
 
 **Features:** Automatic content splitting into several pages, configurable permalinks, page trail, single-page view, SEO support.
 
 - [Jekyll::Paginate::Content](#jekyll--paginate--content)
   * [TL;DR](#tldr)
+    + [Manual](#manual)
+    + [Automatic, with config overrides](#automatic-with-config-overrides)
   * [Why use this?](#why-use-this)
   * [Installation](#installation)
   * [Configuration](#configuration)
@@ -23,7 +25,8 @@
     + [Usage](#usage-1)
   * [Search Engine Optimization (SEO)](#search-engine-optimization-seo)
     + [Automatic](#automatic)
-    + [Manual](#manual)
+    + [Manual](#manual-1)
+  * [Limitations](#limitations)
   * [TODO](#todo)
   * [Demo](#demo)
   * [Contributing](#contributing)
@@ -33,9 +36,11 @@
 
 ## TL;DR
 
+### Manual
+
 ```markdown
 ---
-title: JPC demo
+title: "JPC demo: 3-page manual"
 layout: page
 paginate: true
 ---
@@ -49,48 +54,75 @@ paginate: true
 This shows up at the top of all pages.
 
 <!--page_header-->
+
 This is page 1 of the JPC example.
 
+<a name="lorem"></a>Lorem ipsum dolor...
+
 <!--page-->
-This is page 2.
+This is page 2 with a [link] to the first page which works in single or paged view.
 
 {% if paginator.paginated %}
-<p>This won't show up in the single-page view.</p>
-
-<p><a href="{{ paginator.next_page_path }}">Go on to page {{ paginator.next_page }}</a></p>
+<p><a href="{{ paginator.next_path }}">Go on to page {{ paginator.next_page }}</a></p>
 {% endif %}
-
-<!--page-->
-This is page 3.
-
-<!--page-->
-This is page 4.
-
-<!--page-->
-I have a [link] here in page 5.
-{% if paginator.paginated %}
-We're near the last page (page {{ paginator.last_page }}).
-{% endif %}
-
-<!--page-->
-This is page 6.
 
 <!--page-->
 This is the last page.
 
 <!--page_footer-->
-This goes into all the pages, too!
+This goes into the bottom of all pages.
 
-[link]: https://ibrado.org/
+[link]: #lorem
+```
+[Live demo](https://ibrado.org/demos/3page-manual/)
+
+### Automatic, with config overrides
+
+```markdown
+---
+title: "JPC demo: 3-page auto"
+layout: page
+paginate: true
+paginate_content:
+  separator: h2
+  title: ":title :num/:max: :section"
+  permalink: /page:numof:max.html
+---
+
+## Introduction
+Hello!
+
+## What did something?
+The quick brown fox...
+
+What did it do?
+---------------
+...jumped over the lazy dog.
+
+<!--page_footer-->
+<div>
+{% if paginator.prev_section %}
+&laquo; <a href="{{ paginator.prev_path }}">{{ paginator.prev_section }}</a>
+{% endif %}
+{% if paginator.prev_section and paginator.next_section %}
+  |
+{% endif %}
+{% if paginator.next_section %}
+  <a href="{{ paginator.next_path }}">{{ paginator.next_section }}</a> &raquo;
+{% endif %}
+</div>
 ```
 
-See [demos](#demos).
+[Live demo](https://ibrado.org/demos/3page-auto/)
+
+See other [demos](#demos).
 
 ## Why use this?
 
 1. You want to split long posts and pages/articles/reviews, etc. into multiple pages, e.g. chapters;
 1. You want to offer faster loading times to your readers;
-1. You want more ad revenue from your Jekyll site.
+1. You want more ad revenue from your Jekyll site;
+1. You wanna be the cool kid. :stuck_out_tongue:
 
 ## Installation
 
@@ -128,9 +160,13 @@ paginate_content:
 
   auto: true                         # Set to true to search for the page separator even if you
                                      #   don't set paginate: true in the front-matter
-                                     #   NOTE: This is slower. Default: false
+                                     #   NOTE: This is slower; only works for non-header separators
+                                     # Default: false
 
   separator: "<!--split-->"          # The page separator; default: "<!--page-->"
+                                     # Can be "h1" to "h6" for automatic splitting
+                                     # Note: Setext (underline titles) only supports h1 and h2
+
   header: "<!--head-->"              # The header separator; default: "<!--page_header-->"
   footer: "<!--foot-->"              # The footer separator; default: "<!--page_footer-->"
 
@@ -141,8 +177,16 @@ paginate_content:
 
   single_page: '/full.html'          # Relative path to the single-page view; default: "/view-all/"
 
+  minimum: 1000                      # Minimum number of characters (including markup) in a page
+                                     # for automatic header splitting. 
+                                     #   If a section is too short, the next section will be merged
+                                     # Default: none
+                                     
+
   title: ':title - :num/:max'        # Title format of the split pages, default: original title
-                                     #   :num and :max are as in permalink, :title is the original title
+                                     #   :num and :max are as in permalink,
+                                     #   :title is the original title
+                                     #   :section is the text of the first header
 
   retitle_first: true                # Should the first part be retitled too? Default: false
 
@@ -191,6 +235,7 @@ paginate_content:
 
   #permalink: '/:num/"
   #single_page: '/view-all/'
+  #minimum: 0
 
   #title: ':title'
   #retitle_first: false
@@ -230,7 +275,7 @@ paginate_content:
   auto: true
 ```
 
-Note that using `auto` mode will be slower.
+Note that using `auto` mode will be slower. It currently only works for non-header separators.
 
 You may also override `_config.yml` settings for a particular file like so:
 
@@ -257,7 +302,7 @@ These properties/fields are available to your layouts and content via the `pagin
 | `next_page`          |                 | Next page number                    |
 | `next_page_path`     | `next_path`     | Relative URL to the next page       |
 | `previous_page`      | `prev_page`     | Previous page number                |
-| `previous_page_path` | `previous_path`<br/>`prev_path` | Relative URL to the previous page   |
+| `previous_page_path` | `previous_path`<br/>`prev_path` | Relative URL to the previous page
 | `last_page`          |                 | Last page number                    |
 | `last_page_path`     | `last_path`     | Relative URL to the last page       |
 | `page`               | `page_num`      | Current page number                 |
@@ -267,7 +312,11 @@ These properties/fields are available to your layouts and content via the `pagin
 | `total_pages`        | `pages`         | Total number of pages               |
 |                      |                 |                                     |
 | `single_page`        | `view_all`      | Path to the original/full page      |
-| `seo`                |                 | HTML header tags for SEO, see [below](#seo) |
+| `seo`                |                 | HTML header tags for SEO, see [below](#seo)
+|                      |                 |                                     |
+| `section`            |                 | Text of the first header (&lt;h1&gt; etc.) on this page
+| `previous_section`   | `prev_section`  | Ditto for the previous page         |
+| `next_section`       |                 | Ditto for the next page             |
 |                      |                 |                                     |
 | `has_next`           |                 | `true` if there is a next page      |
 | `has_previous`       | `has_prev`      | `true` if there is a previous page  |
@@ -448,10 +497,9 @@ The author's `_config.yml` has the following:
 
 ```
 
-<a name="trails"></a>
 ## Pagination trails
 
-You use `paginator.page_trail` to create a pager that will allow your readers to move from page to page. It is set up as follows:
+<a name="trails"></a>You use `paginator.page_trail` to create a pager that will allow your readers to move from page to page. It is set up as follows:
 
 ```yaml
 paginate_content:
@@ -633,17 +681,26 @@ This way it works with JPv2, JPC, and with no paginator active. The author uses 
 
 What about `canonical` for JPv2-generated pages? Unless you have a "view-all" page that includes all your unpaginated posts and you want search engines to use that possibly huge page as the primary search result, it is probably best to just not put a `canonical` link at all.
 
-<a name="demos"></a>
 ## Demos
+<a name="demos"></a>
 
 1. TL;DR example as a [post](https://ibrado.org/2017/12/jpc-demo-post/), as an item in a [collection](https://ibrado.org/demos/jekyll-paginate-content/), and as a [page](https://ibrado.org/jpcdemo/).
 1. [This README](https://ibrado.org/demos/jekyll-paginate-content/README/), paginated
 
+## Limitations
+
+1. Only the following formats are currently recognized as anchors:
+    - `<a name="something">(possibly something here)</a>`
+    - `<some_element ... id="something" ...>`
+1. Only the following are currently recognized as references to those anchors:
+    - `[description](#something)`
+    - `[description]: #something`
+1. The Setext mode for headers (underlining with equal signs [h1] or dashes [h2]) needs to have at least 4 dashes for h2.
+1. `auto` only supports non-header separators for now
 
 ## TODO
 
 1. Automatic Table of Contents
-1. Automatic splitting based on headers (&lt;h2&gt;, etc.)
 
 ## Contributing
 
