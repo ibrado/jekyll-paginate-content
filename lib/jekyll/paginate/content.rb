@@ -271,6 +271,19 @@ module Jekyll
         num = 1
         max = pages.length
 
+        # Find the anchors tags points
+        a_location = {}
+        i = 0
+        pages.each do |page|
+          page.scan(/<a\s+name=['"](\S+)['"]><\/a>/i).flatten.each do |a|
+            a_location[a] = i
+          end
+          page.scan(/<[^>]*id=['"](\S+)['"][^>]*>/i).flatten.each do |a|
+            a_location[a] = i
+          end
+          i += 1
+        end
+
         pages.each do |page|
           plink_all = nil
           plink_next = nil
@@ -401,6 +414,18 @@ module Jekyll
           num += 1
         end
 
+        # Replace the references
+        i = 0
+        new_items.each do |item|
+          content = item.content
+          content.scan(/\[[^\]]+\]\(#(.*)\)/i).flatten.each do |a|
+            page_num = a_location[a]
+            content.gsub!(/(\[[^\]]+\]\()##{a}(\))/i,
+              '\1'+new_items[page_num].data['permalink']+'#'+a+'\2')
+          end
+          i += 1
+        end
+
         # Setup single-page view
 
         if @collection == "pages"
@@ -425,7 +450,7 @@ module Jekyll
         single.data['title'] = item.data['title']
 
         # Just some limited data for the single page
-        seo = @config[:seo_canonical] ? 
+        seo = @config[:seo_canonical] ?
           _seo('canonical', site_url + single_page) : ""
 
         single_paginator = {
