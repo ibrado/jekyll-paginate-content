@@ -414,14 +414,25 @@ module Jekyll
           num += 1
         end
 
-        # Replace the references
+        # Replace #target with page_path#target
         i = 0
         new_items.each do |item|
           content = item.content
+
+          # TODO: Try to merge these
+
+          # [Something](#target)
           content.scan(/\[[^\]]+\]\(#(.*)\)/i).flatten.each do |a|
             page_num = a_location[a]
             content.gsub!(/(\[[^\]]+\]\()##{a}(\))/i,
               '\1'+new_items[page_num].data['permalink']+'#'+a+'\2')
+          end
+
+          # [Something]: #target
+          content.scan(/\[[^\]]+\]:\s*#(\S+)/i).flatten.each do |a|
+            page_num = a_location[a]
+            content.gsub!(/(\[[^\]]+\]:\s*)##{a}/i,
+              '\1'+new_items[page_num].data['permalink']+'#'+a)
           end
           i += 1
         end
