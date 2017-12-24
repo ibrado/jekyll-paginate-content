@@ -267,15 +267,12 @@ module Jekyll
             end
 
           else
-            puts "Too deep for stx"
             init_pages = atx_parts
           end
 
           init_pages.flatten!
-          puts "HEADER FOUND #{init_pages.length} PAGES"
         else
           init_pages = item.content.split(sep)
-          puts "STANDARD FOUND #{init_pages.length} PAGES"
         end
 
         return if init_pages.length == 1
@@ -286,13 +283,11 @@ module Jekyll
           init_pages.each do |page_content|
             i = pages.empty? ? 0 : pages.length - 1
             if !pages[i] || pages[i].length < @config[:minimum]
-              puts "Page #{i} too short... adding next part"
               pages[i] ||= ""
               pages[i] << page_content
             else
               pages << page_content
               i += 1
-              puts "Adding new page #{i}"
             end
           end
 
@@ -317,6 +312,8 @@ module Jekyll
         # For SEO
         site_url = @site.config['canonical'] || @site.config['url']
         site_url.gsub!(/\/$/, '')
+
+        base = item.url
 
         user_props = @config[:user_props]
 
@@ -352,8 +349,6 @@ module Jekyll
 
           first = num == 1
           last = num == max
-
-          base = item.url
 
           if m = base.match(/(.*\/[^\.]*)(\.[^\.]+)$/)
             # /.../filename.ext
@@ -391,33 +386,25 @@ module Jekyll
           # Find the section names from the first h1 etc.
           atx_loc = stx_loc = page.length
 
-          #if m = /\A(.*?)\r?\n?#+\s+(.*)\s*#*/.match(page)
           if m = /(.*\r?\n|)#+\s+(.*)\s*#*/.match(page)
             atx_loc = m[1].length
             atx = m[2]
-            puts "ATX MATCH 1: #{atx} AT #{atx_loc}"
           end
 
-          #if m = /\A(.*?)([^\r\n]+)\r?\n[\-=]+\s*\r?\n/.match(page)
           if m = /(.*\r?\n|)([^\r\n]+)\r?\n[\-=]{4,}\s*\r?\n/.match(page)
             stx_loc = m[1].length
             stx = m[2]
-            puts "STX MATCH 2: #{stx} AT #{stx_loc}: #{m[1]}"
           end
 
           if atx_loc < stx_loc
-            puts "Using atx"
             section = atx
           elsif stx_loc < atx_loc
-            puts "Using STX"
             section = stx
           else
-            puts "NO MATCH: " +page.inspect
             section = "Unnamed"
           end
 
           paginator['section'] = section
-          puts "SECTION: #{section}"
 
           paginator['paginated'] = true
           paginator['page_num'] = num
@@ -456,12 +443,6 @@ module Jekyll
           paginator['has_previous'] = (num >= 2)
           paginator['has_next'] = (num < max)
 
-          t_config = @config[:trail]
-          t_config[:title] = @config[:title]
-
-          paginator['page_trail'] = _page_trail(base, new_part.data['title'],
-            num, max, t_config)
-
           seo = {}
           seo['canonical'] =  _seo('canonical', site_url + plink_all) if @config[:seo_canonical];
           seo['prev'] = _seo('prev', site_url + plink_prev) if plink_prev
@@ -486,8 +467,7 @@ module Jekyll
           new_part.data['date'] = item.data['date']
           new_part.data['permalink'] = plink
 
-          new_part.data['title'] =
-            _title(@config[:title], new_part.data['title'], num, max, @config[:retitle_first])
+          # title is set together with trail below as it may rely on section name
 
           new_part.data['pagination_info'] =
             {
@@ -503,6 +483,9 @@ module Jekyll
 
           num += 1
         end
+
+        t_config = @config[:trail]
+        t_config[:title] = @config[:title]
 
         # Replace #target with page_path#target
         i = 0
@@ -524,6 +507,13 @@ module Jekyll
             content.gsub!(/(\[[^\]]+\]:\s*)##{a}/i,
               '\1'+new_items[page_num].data['permalink']+'#'+a)
           end
+
+          item.data['title'] =
+            _title(@config[:title], new_items, i+1, new_items.length,
+              @config[:retitle_first])
+
+          item.pager.page_trail = _page_trail(base, new_items, i+1,
+            new_items.length, t_config)
 
           # Also do the section name assignments
           item.pager.previous_section = new_items[i-1].pager.section if i > 0
@@ -578,7 +568,7 @@ module Jekyll
       end
 
       private
-      def _page_trail(base, orig, page, max, config)
+      def _page_trail(base, items, page, max, config)
         page_trail = []
 
         before = config["before"] || 0
@@ -604,7 +594,7 @@ module Jekyll
 
         i = start_page
         while i <= end_page do
-          title = _title(config[:title], orig, i, max)
+          title = _title(config[:title], items, i, max)
           page_trail <<
             {
               'num' => i,
@@ -630,10 +620,14 @@ module Jekyll
           gsub(/\/\//, '/')
       end
 
-      def _title(format, orig, page, max, retitle_first = false)
+      def _title(format, items, page, max, retitle_first = false)
+        orig = items[page-1].data['title']
         return orig if !format || (page == 1 && !retitle_first)
 
+        section = items[page-1].pager.section
+
         format.gsub(/:title/, orig).
+          gsub(/:section/, section).
           gsub(/:num/, page.to_s).
           gsub(/:max/, max.to_s)
       end
