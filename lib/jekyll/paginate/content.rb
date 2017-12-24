@@ -405,7 +405,8 @@ module Jekyll
           elsif stx_loc < atx_loc
             section = stx
           else
-            section = first ? "Introduction" : "Unnamed"
+            #section = first ? "Introduction" : "Unnamed"
+            section = "Unnamed"
           end
 
           paginator['section'] = section
