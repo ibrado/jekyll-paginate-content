@@ -328,10 +328,11 @@ module Jekyll
         num = 1
         max = pages.length
 
-        # Find the anchors tags points
+        # Find the anchors/targets
         a_location = {}
-        i = 0
+        i = 1
         pages.each do |page|
+          # TODO: Try to combine these
           page.scan(/<a\s+name=['"](\S+)['"]><\/a>/i).flatten.each do |a|
             a_location[a] = i
           end
@@ -404,7 +405,7 @@ module Jekyll
           elsif stx_loc < atx_loc
             section = stx
           else
-            section = "Unnamed"
+            section = first ? "Introduction" : "Unnamed"
           end
 
           paginator['section'] = section
@@ -499,16 +500,18 @@ module Jekyll
 
           # [Something](#target)
           content.scan(/\[[^\]]+\]\(#(.*)\)/i).flatten.each do |a|
-            page_num = a_location[a]
-            content.gsub!(/(\[[^\]]+\]\()##{a}(\))/i,
-              '\1'+new_items[page_num].data['permalink']+'#'+a+'\2')
+            if page_num = a_location[a]
+              content.gsub!(/(\[[^\]]+\]\()##{a}(\))/i,
+                '\1'+new_items[page_num-1].data['permalink']+'#'+a+'\2')
+            end
           end
 
           # [Something]: #target
           content.scan(/\[[^\]]+\]:\s*#(\S+)/i).flatten.each do |a|
-            page_num = a_location[a]
-            content.gsub!(/(\[[^\]]+\]:\s*)##{a}/i,
-              '\1'+new_items[page_num].data['permalink']+'#'+a)
+            if page_num = a_location[a]
+              content.gsub!(/(\[[^\]]+\]:\s*)##{a}/i,
+                '\1'+new_items[page_num-1].data['permalink']+'#'+a)
+            end
           end
 
           item.pager.page_trail = _page_trail(base, new_items, i+1,
