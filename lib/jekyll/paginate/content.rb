@@ -5,6 +5,8 @@ module Jekyll
 
     class Generator < Jekyll::Generator
       def generate(site)
+        start_time = Time.now
+
         sconfig = site.config['paginate_content'] || {}
 
         return unless sconfig["enabled"].nil? || sconfig["enabled"]
@@ -108,8 +110,9 @@ module Jekyll
 
             info "[#{collection}] Generated #{total_parts}+#{total_copies} pages"
           end
-
         end
+        runtime = "%.6f" % (Time.now - start_time).to_f
+        debug "Runtime: #{runtime}s"
       end
 
       private
@@ -508,19 +511,24 @@ module Jekyll
               '\1'+new_items[page_num].data['permalink']+'#'+a)
           end
 
-          item.data['title'] =
-            _title(@config[:title], new_items, i+1, new_items.length,
-              @config[:retitle_first])
-
           item.pager.page_trail = _page_trail(base, new_items, i+1,
             new_items.length, t_config)
 
-          # Also do the section name assignments
+          # Previous/next section name assignments
           item.pager.previous_section = new_items[i-1].pager.section if i > 0
           item.pager.next_section = new_items[i+1].pager.section if i < new_items.length - 1
 
           i += 1
+        end
 
+        # This is in another loop to avoid messing with the titles
+        #   during page trail generation
+        i = 1
+        new_items.each do |item|
+          item.data['title'] =
+            _title(@config[:title], new_items, i, new_items.length,
+              @config[:retitle_first])
+          i += 1
         end
 
         # Setup single-page view
@@ -539,9 +547,8 @@ module Jekyll
           'id' => id
         }
 
-        single.data['permalink'] = single_page
-
         # Restore original properties for these
+        single.data['permalink'] = single_page
         single.data['layout'] = item.data['layout']
         single.data['date'] = item.data['date']
         single.data['title'] = item.data['title']
