@@ -84,6 +84,8 @@ This goes into all the pages, too!
 [link]: https://ibrado.org/
 ```
 
+See [demos](#demos).
+
 ## Why use this?
 
 1. You want to split long posts and pages/articles/reviews, etc. into multiple pages, e.g. chapters;
@@ -207,7 +209,6 @@ paginate_content:
   #  single:
 
 ```
-
 
 ## Usage
 
@@ -430,7 +431,7 @@ The author's `_config.yml` has the following:
 
 `x_tags` and `x_cats` are used in this case to store the original tags and categories for generating a list of related posts only for last pages or single-page views. `comments` and `share` are likewise used to turn on the sections for comments and social media sharing for these pages.
 
-`x_title` is used to save the original title and use that in social media sharing. The example below also does something similar for the share URL:
+`x_title` saves the original title for use in social media sharing. The example below also does something similar for the URL to be shared:
 
 ```
 {% if page.x_title %}
@@ -459,7 +460,7 @@ paginate_content:
     after: 2
 ```
 
-`before` refers to the number of page links you want to appear before the current page; similarly, `after` is the number of page links after the current page. So, in the above example, you have 2 before + 1 current + 2 after = 5 links to pages in your trail "window".
+`before` refers to the number of page links you want to appear before the current page, as much as possible. Similarly, `after` is the number of page links after the current page. So, in the above example, you have 2 before + 1 current + 2 after = 5 links to pages in your trail "window".
 
 If you don't specify the `trail` properties, or set `before` and `after` to 0, all page links will be returned.
 
@@ -632,17 +633,17 @@ This way it works with JPv2, JPC, and with no paginator active. The author uses 
 
 What about `canonical` for JPv2-generated pages? Unless you have a "view-all" page that includes all your unpaginated posts and you want search engines to use that possibly huge page as the primary search result, it is probably best to just not put a `canonical` link at all.
 
+<a name="demos"></a>
+## Demos
 
-## Demo
+1. TL;DR example as a [post](https://ibrado.org/2017/12/jpc-demo-post/), as an item in a [collection](https://ibrado.org/demos/jekyll-paginate-content/), and as a [page](https://ibrado.org/jpcdemo/).
+1. [This README](https://ibrado.org/demos/jekyll-paginate-content/README/), paginated
 
-See the [author's blog](https://ibrado.org/) for a (possible) demo.
 
 ## TODO
 
 1. Automatic Table of Contents
 1. Automatic splitting based on headers (&lt;h2&gt;, etc.)
-
-
 
 ## Contributing
 
