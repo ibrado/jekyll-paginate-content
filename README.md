@@ -142,7 +142,7 @@ paginate_content:
   title: ':title - :num/:max'        # Title format of the split pages, default: original title
                                      #   :num and :max are as in permalink, :title is the original title
 
-  retitle_first: false               # Should the first part be retitled too? Default: true
+  retitle_first: true                # Should the first part be retitled too? Default: false
 
   trail:                             # The page trail settings: number of pages to list
     before: 3                        #   before and after the current page
@@ -191,7 +191,7 @@ paginate_content:
   #single_page: '/view-all/'
 
   #title: ':title'
-  #retitle_first: true
+  #retitle_first: false
 
   #trail:
   #  before: 0
@@ -215,7 +215,7 @@ Just add a `paginate: true` entry to your front-matter:
 
 ```yaml
 ---
-title: Test
+title: Test post
 layout: post
 date: 2017-12-15 22:33:44
 paginate: true
@@ -230,6 +230,19 @@ paginate_content:
 ```
 
 Note that using `auto` mode will be slower.
+
+You may also override `_config.yml` settings for a particular file like so:
+
+```yaml
+---
+title: Test page
+layout: page
+paginate: true
+paginate_content:
+  permalink: '/page:numof:max.html'
+  single_page: '/full.html'
+---
+```
 
 ## Properties
 
@@ -592,7 +605,7 @@ It will produce up to three lines, like so (assuming you are on page 5):
 
 To give your non-paginated content a `canonical` link as well, try this:
 
-```
+```html
 {{ paginator.seo.links }}
 {% unless paginator %}
   <link rel="canonical" href="{{ site.url | append: page.url }}" />
@@ -652,7 +665,7 @@ Bug reports and pull requests are welcome on GitHub at [https://github.com/ibrad
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
 
 ## Code of Conduct
-Everyone interacting in the Jekyll::Paginate::Content project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/jekyll-paginate-content/blob/master/CODE_OF_CONDUCT.md).
+Everyone interacting in the Jekyll::Paginate::Content project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/ibrado/jekyll-paginate-content/blob/master/CODE_OF_CONDUCT.md).
 
 ## Also by the Author
 
