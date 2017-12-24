@@ -159,11 +159,11 @@ module Jekyll
         :first_path, :has_next, :has_prev, :has_previous,
         :is_first, :is_last, :last_page, :last_page_path,
         :last_path, :next_is_last, :next_page, :next_page_path,
-        :next_path, :page, :page_num, :page_path, :page_trail,
-        :pages, :paginated, :previous_is_first, :prev_is_first,
-        :previous_page, :prev_page, :previous_page_path,
-        :previous_path, :prev_path, :seo, :single_page,
-        :total_pages, :view_all
+        :next_path, :next_section, :page, :page_num, :page_path,
+        :page_trail, :pages, :paginated, :previous_is_first,
+        :prev_is_first, :previous_page, :prev_page, :previous_page_path,
+        :previous_path, :prev_path, :prev_section, :previous_section,
+        :section, :seo, :single_page, :total_pages, :view_all
 
       def initialize(data)
         data.each do |k,v|
@@ -197,6 +197,9 @@ module Jekyll
           'paginated' => paginated,
           'seo' => seo,
           'single_page' => single_page,
+          'section' => section,
+          'next_section' => next_section,
+          'previous_section' => previous_section,
 
           # Aliases
           'activated' => paginated,
@@ -208,6 +211,7 @@ module Jekyll
           'last_path' => last_page_path,
           'prev_page' => previous_page,
           'prev_is_first' => previous_is_first,
+          'prev_section' => previous_section,
           'page_num' => page_num,
           'pages' => total_pages,
           'view_all' => single_page
@@ -241,6 +245,7 @@ module Jekyll
       def split(item)
         sep = @config[:separator]
 
+        # Special separator: h1-h6
         if m = /^h([1-6])$/i.match(sep.strip)
           # Split on <h2> etc.
 
@@ -255,11 +260,12 @@ module Jekyll
           if level <= 2
             # Setext syntax: underlined by '=' (h1) or '-' (h2)
             # For now require four '-' to avoid confusion with <hr>
-            #    or demo YAML front-matter
+            #   or demo YAML front-matter
             stx = level == 1 ? "=" : '-' * 4
             atx_parts.each do |section|
               init_pages << section.split(/(?=^.+\n#{stx}+$)/)
             end
+
           else
             puts "Too deep for stx"
             init_pages = atx_parts
@@ -274,8 +280,8 @@ module Jekyll
 
         return if init_pages.length == 1
 
+        # Make page length the minimum, if specified
         if @config[:minimum]
-          min = 2048
           pages = []
           init_pages.each do |page_content|
             i = pages.empty? ? 0 : pages.length - 1
@@ -335,6 +341,8 @@ module Jekyll
           i += 1
         end
 
+        ######################################## Main processing
+
         pages.each do |page|
           plink_all = nil
           plink_next = nil
@@ -379,6 +387,37 @@ module Jekyll
           else
             new_part = Document.new(item, @site, @collection)
           end
+
+          # Find the section names from the first h1 etc.
+          atx_loc = stx_loc = page.length
+
+          #if m = /\A(.*?)\r?\n?#+\s+(.*)\s*#*/.match(page)
+          if m = /(.*\r?\n|)#+\s+(.*)\s*#*/.match(page)
+            atx_loc = m[1].length
+            atx = m[2]
+            puts "ATX MATCH 1: #{atx} AT #{atx_loc}"
+          end
+
+          #if m = /\A(.*?)([^\r\n]+)\r?\n[\-=]+\s*\r?\n/.match(page)
+          if m = /(.*\r?\n|)([^\r\n]+)\r?\n[\-=]{4,}\s*\r?\n/.match(page)
+            stx_loc = m[1].length
+            stx = m[2]
+            puts "STX MATCH 2: #{stx} AT #{stx_loc}: #{m[1]}"
+          end
+
+          if atx_loc < stx_loc
+            puts "Using atx"
+            section = atx
+          elsif stx_loc < atx_loc
+            puts "Using STX"
+            section = stx
+          else
+            puts "NO MATCH: " +page.inspect
+            section = "Unnamed"
+          end
+
+          paginator['section'] = section
+          puts "SECTION: #{section}"
 
           paginator['paginated'] = true
           paginator['page_num'] = num
@@ -485,7 +524,13 @@ module Jekyll
             content.gsub!(/(\[[^\]]+\]:\s*)##{a}/i,
               '\1'+new_items[page_num].data['permalink']+'#'+a)
           end
+
+          # Also do the section name assignments
+          item.pager.previous_section = new_items[i-1].pager.section if i > 0
+          item.pager.next_section = new_items[i+1].pager.section if i < new_items.length - 1
+
           i += 1
+
         end
 
         # Setup single-page view
