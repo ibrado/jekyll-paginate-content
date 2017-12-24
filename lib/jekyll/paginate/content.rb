@@ -239,9 +239,60 @@ module Jekyll
       end
 
       def split(item)
-        pages = item.content.split(@config[:separator])
+        sep = @config[:separator]
 
-        return if pages.length == 1
+        if m = /^h([1-6])$/i.match(sep.strip)
+          # Split on <h2> etc.
+
+          level = m[1].to_i
+
+          init_pages = []
+
+          # atx syntax: Prefixed by one or more '#'
+          atx = "#" * level
+          atx_parts = item.content.split(/(?=^#{atx} )/)
+
+          if level <= 2
+            # Setext syntax: underlined by '=' (h1) or '-' (h2)
+            # For now require four '-' to avoid confusion with <hr>
+            #    or demo YAML front-matter
+            stx = level == 1 ? "=" : '-' * 4
+            atx_parts.each do |section|
+              init_pages << section.split(/(?=^.+\n#{stx}+$)/)
+            end
+          else
+            puts "Too deep for stx"
+            init_pages = atx_parts
+          end
+
+          init_pages.flatten!
+          puts "HEADER FOUND #{init_pages.length} PAGES"
+        else
+          init_pages = item.content.split(sep)
+          puts "STANDARD FOUND #{init_pages.length} PAGES"
+        end
+
+        return if init_pages.length == 1
+
+        if @config[:minimum]
+          min = 2048
+          pages = []
+          init_pages.each do |page_content|
+            i = pages.empty? ? 0 : pages.length - 1
+            if !pages[i] || pages[i].length < @config[:minimum]
+              puts "Page #{i} too short... adding next part"
+              pages[i] ||= ""
+              pages[i] << page_content
+            else
+              pages << page_content
+              i += 1
+              puts "Adding new page #{i}"
+            end
+          end
+
+        else
+          pages = init_pages
+        end
 
         page_header = pages[0].split(@config[:header])
         pages[0] = page_header[1] || page_header[0]
