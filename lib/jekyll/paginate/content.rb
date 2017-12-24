@@ -333,7 +333,7 @@ module Jekyll
         i = 1
         pages.each do |page|
           # TODO: Try to combine these
-          page.scan(/<a\s+name=['"](\S+)['"]><\/a>/i).flatten.each do |a|
+          page.scan(/<a\s+name=['"](\S+)['"]>[^<]*<\/a>/i).flatten.each do |a|
             a_location[a] = i
           end
           page.scan(/<[^>]*id=['"](\S+)['"][^>]*>/i).flatten.each do |a|
