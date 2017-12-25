@@ -172,7 +172,7 @@ module Jekyll
         :page_trail, :pages, :paginated, :previous_is_first,
         :prev_is_first, :previous_page, :prev_page, :previous_page_path,
         :previous_path, :prev_path, :prev_section, :previous_section,
-        :section, :seo, :single_page, :total_pages, :view_all
+        :section, :seo, :single_page, :toc, :total_pages, :view_all
 
       def initialize(data)
         data.each do |k,v|
@@ -207,6 +207,7 @@ module Jekyll
           'seo' => seo,
           'single_page' => single_page,
           'section' => section,
+          'toc' => toc,
           'next_section' => next_section,
           'previous_section' => previous_section,
 
@@ -254,7 +255,9 @@ module Jekyll
       def split(item)
         sep = @config[:separator].downcase.strip
 
-        content = item.content.dup
+        #content = item.content.dup
+        # Update the links for the original document
+        content = item.content
 
         # Escape special characters inside code blocks
         content.scan(/(```|~~~+)(.*?)\1/m).each do |e|
@@ -264,31 +267,28 @@ module Jekyll
 
         # Generate the TOC
         toc = ""
-        
-        # TODO: Optimize this regex
-
 
         seen_anchors = {}
         list_chars = ['-','*','+']
 
-        #content.scan(/(^|\r?\n)((#+)\s*([^\r\n#]+)#*|([^\r\n]+)\r?\n([\-=]{4,})\s*\r?\n|<h([1-6])[^>]*>([^\r\n<]+)(\s*<\/h\7>))/mi).each do |m|
-        content.scan(/(^|\r?\n)((#+)\s*([^\r\n#]+)#*|([^\r\n]+)\r?\n(=+|\-{4,})\s*\r?\n|<h([1-6])[^>]*>([^\r\n<]+)(\s*<\/h\7>))/mi).each do |m|
+        # TODO: Optimize this regex
+        content.scan(/(^|\r?\n)((#+)\s*([^\r\n#]+)#*\r?\n|([^\r\n]+)\r?\n(=+|\-{4,})\s*\r?\n|<h([1-6])[^>]*>([^\r\n<]+)(\s*<\/h\7>))/mi).each do |m|
           #header = (m[3] || m[4] || m[7]).strip
           markup = m[1].strip
           header = m[3] || m[4] || m[7]
 
           # Level is 0-based for convenience
           if m[3]
-            level = m[2].length - 1 
+            level = m[2].length - 1
           elsif m[4]
             level = m[5][0] == '=' ? 0 : 1
           elsif m[7]
             level = m[6].to_i - 1
           end
 
-          puts "Markup: #{markup.inspect}"
+          #puts "Markup: #{markup.inspect}"
           orig_anchor = anchor = header.downcase.gsub(/[[:punct:]]/, '').gsub(/\s+/, '-')
-          
+
           ctr = 1
           while seen_anchors[anchor]
             anchor = "#{orig_anchor}-#{ctr}"
@@ -297,18 +297,27 @@ module Jekyll
           seen_anchors[anchor] = 1
 
           escaped = Regexp.escape(markup)
-          content.gsub!(/#{escaped}/,"#{markup}#{$/}{: id=\"#{anchor}\"}#{$/}")
-          puts "Saw #{header} level #{level}, anchor #{anchor}"
+          markup = "$$_#{markup}_$$"
           puts "Replacing #{escaped} with #{markup}#{$/}{: id=\"#{anchor}\"}#{$/}"
+
+          content.sub!(/#{escaped}\s*(?=#|\r?\n)/, "#{markup}#{$/}{: id=\"#{anchor}\"}#{$/}")
+          #puts "Saw #{header} level #{level}, anchor #{anchor}"
+          #puts "--------------------------------------------------"
+          #puts content
+          #puts "--------------------------------------------------"
 
           char = list_chars[level % 3]
           indent = '  ' * level
           toc << "#{indent}#{char} [#{header}](##{anchor})#{$/}"
         end
 
-        puts "========= table of contents ========="
-        puts toc
-        puts "====================================="
+        content.gsub!(/\$\$_(.*?)_\$\$/, '\1')
+
+        #puts "========= table of contents ========="
+        #puts toc
+        #puts "====================================="
+
+        @toc = toc
 
         #puts content
 
@@ -350,6 +359,9 @@ module Jekyll
         end
 
         return if init_pages.length == 1
+
+        # Unescape special characters inside code blocks, for main content
+        content.gsub!(/~\|(.)\|/, '\1')
 
         # Make page length the minimum, if specified
         if @config[:minimum]
@@ -400,15 +412,21 @@ module Jekyll
         max = pages.length
 
         # Find the anchors/targets
-        a_location = {}
+        a_locations = {}
         i = 1
         pages.each do |page|
           # TODO: Try to combine these
           page.scan(/<a\s+name=['"](\S+)['"]>[^<]*<\/a>/i).flatten.each do |a|
-            a_location[a] = i
+            a_locations[a] = i
+            puts "Anchor #{a} found at #{i} by name"
           end
           page.scan(/<[^>]*id=['"](\S+)['"][^>]*>/i).flatten.each do |a|
-            a_location[a] = i
+            a_locations[a] = i
+            puts "Anchor #{a} found at #{i} by id"
+          end
+          page.scan(/{:.*id=['"](\S+)['"][^}]*}/i).flatten.each do |a|
+            a_locations[a] = i
+            puts "Anchor #{a} found at #{i} by markdown"
           end
           i += 1
         end
@@ -416,7 +434,7 @@ module Jekyll
         ######################################## Main processing
 
         pages.each do |page|
-          # Unescape special characters inside code blocks
+          # Unescape special characters inside code blocks, for pages
           page.gsub!(/~\|(.)\|/, '\1')
 
           plink_all = nil
@@ -570,23 +588,12 @@ module Jekyll
         new_items.each do |item|
           content = item.content
 
-          # TODO: Try to merge these
+          _adjust_links(new_items, item.content, a_locations, i+1)
 
-          # [Something](#target)
-          content.scan(/\[[^\]]+\]\(#(.*)\)/i).flatten.each do |a|
-            if page_num = a_location[a]
-              content.gsub!(/(\[[^\]]+\]\()##{a}(\))/i,
-                '\1'+new_items[page_num-1].data['permalink']+'#'+a+'\2')
-            end
-          end
+          toc = @toc.dup
+          _adjust_links(new_items, toc, a_locations, i+1)
 
-          # [Something]: #target
-          content.scan(/\[[^\]]+\]:\s*#(\S+)/i).flatten.each do |a|
-            if page_num = a_location[a]
-              content.gsub!(/(\[[^\]]+\]:\s*)##{a}/i,
-                '\1'+new_items[page_num-1].data['permalink']+'#'+a)
-            end
-          end
+          item.pager.toc = toc
 
           item.pager.page_trail = _page_trail(base, new_items, i+1,
             new_items.length, t_config)
@@ -637,6 +644,7 @@ module Jekyll
         single_paginator = {
           'first_page_path' => first_page_path,
           'total_pages' => total_pages,
+          'toc' => @toc,
           'seo' => {
             'links' => seo,
             'canonical' => seo
@@ -746,6 +754,28 @@ module Jekyll
         else
           item.data.merge!(stage_props)
         end
+
+      end
+
+      def _adjust_links(new_items, content, a_locations, num)
+        # TODO: Try to merge these
+
+        # [Something](#target)
+        content.scan(/\[[^\]]+\]\(#(.*)\)/i).flatten.each do |a|
+          if (page_num = a_locations[a]) && (page_num != num)
+            content.gsub!(/(\[[^\]]+\]\()##{a}(\))/i,
+              '\1'+new_items[page_num-1].data['permalink']+'#'+a+'\2')
+          end
+        end
+
+        # [Something]: #target
+        content.scan(/\[[^\]]+\]:\s*#(\S+)/i).flatten.each do |a|
+          if (page_num = a_locations[a]) && (page_num != num)
+            content.gsub!(/(\[[^\]]+\]:\s*)##{a}/i,
+              '\1'+new_items[page_num-1].data['permalink']+'#'+a)
+          end
+        end
+
 
       end
 
