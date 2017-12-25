@@ -262,6 +262,55 @@ module Jekyll
           content.gsub!(e[1], escaped)
         end
 
+        # Generate the TOC
+        toc = ""
+        
+        # TODO: Optimize this regex
+
+
+        seen_anchors = {}
+        list_chars = ['-','*','+']
+
+        content.scan(/(^|\r?\n)((#+)\s*([^\r\n#]+)#*|([^\r\n]+)\r?\n([\-=]{4,})\s*\r?\n|<h([1-6])[^>]*>([^\r\n<]+)(\s*<\/h\7>))/mi).each do |m|
+          #header = (m[3] || m[4] || m[7]).strip
+          markup = m[1].strip
+          header = m[3] || m[4] || m[7]
+
+          # Level is 0-based for convenience
+          if m[3]
+            level = m[2].length - 1 
+          elsif m[4]
+            level = m[5][0] == '=' ? 0 : 1
+          elsif m[7]
+            level = m[6].to_i - 1
+          end
+
+          puts "Markup: #{markup.inspect}"
+          orig_anchor = anchor = header.downcase.gsub(/[[:punct:]]/, '').gsub(/\s+/, '-')
+          
+          ctr = 1
+          while seen_anchors[anchor]
+            anchor = "#{orig_anchor}-#{ctr}"
+            ctr += 1
+          end
+          seen_anchors[anchor] = 1
+
+          escaped = Regexp.escape(markup)
+          content.gsub!(/#{escaped}/,"#{markup}#{$/}{: id=\"#{anchor}\"}#{$/}")
+          puts "Saw #{header} level #{level}, anchor #{anchor}"
+          puts "Replacing #{escaped} with #{markup}#{$/}{: id=\"#{anchor}\"}#{$/}"
+
+          char = list_chars[level % 3]
+          indent = '  ' * level
+          toc << "#{indent}#{char} [#{header}](##{anchor})#{$/}"
+        end
+
+        puts "========= table of contents ========="
+        puts toc
+        puts "====================================="
+
+        #puts content
+
         # Special separator: h1-h6
         if m = /^h([1-6])$/.match(sep)
           # Split on <h2> etc.
@@ -422,8 +471,8 @@ module Jekyll
             candidates[m[2]] = m[1].length
           end
 
-          if m = /(.*\r?\n|)<h([1-6])[^>]*>([^\r\n<]+)([\r\n]|<\/h\1)/i.match(page.gsub(/\r?\n/, ''))
-            candidates[m[3]] = m[1].length
+          if m = /<h([1-6])[^>]*>\s*([^\r\n<]+)(\s*<\/h\1)/mi.match(page)
+            candidates[m[2]] = m[1].length
           end
 
           if candidates.empty?
