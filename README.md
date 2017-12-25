@@ -2,11 +2,11 @@
 
 [![Gem Version](https://badge.fury.io/rb/jekyll-paginate-content.svg)](https://badge.fury.io/rb/jekyll-paginate-content)
 
-*Jekyll::Paginate::Content* (JPC) is a plugin for [Jekyll](https://jekyllrb.com/) that automatically splits pages, posts, and other content into one or more pages. These can be at points where e.g. `<!--page-->` is inserted, or at &lt;h1&gt; to &lt;h6&gt;. It mimics [jekyll-paginate-v2](https://github.com/sverrirs/jekyll-paginate-v2) (JPv2) naming conventions and features, so if you use that, there is almost nothing new to learn.
+*Jekyll::Paginate::Content* (JPC) is a plugin for [Jekyll](https://jekyllrb.com/) that automatically splits pages, posts, and other content into one or more pages. This can be at points where e.g. `<!--page-->` is inserted, or at the &lt;h1&gt; to &lt;h6&gt; headers. It mimics [jekyll-paginate-v2](https://github.com/sverrirs/jekyll-paginate-v2) (JPv2) naming conventions and features, so if you use that, there is almost nothing new to learn.
 
 **Features:** Automatic content splitting into several pages, configurable permalinks, page trail, single-page view, SEO support.
 
-- [Jekyll::Paginate::Content](#jekyll--paginate--content)
+- [Jekyll::Paginate::Content](#jekyllpaginatecontent)
   * [TL;DR](#tldr)
     + [Manual](#manual)
     + [Automatic, with config overrides](#automatic-with-config-overrides)
@@ -14,8 +14,12 @@
   * [Installation](#installation)
   * [Configuration](#configuration)
   * [Usage](#usage)
+  * [Setting up splitting](#setting-up-splitting)
+    + [Manual mode](#manual-mode)
+    + [HTML header mode](#html-header-mode)
+    + [Page headers and footers](#page-headers-and-footers)
   * [Properties](#properties)
-  * [Page/Post properties](#pagepost-properties)
+  * [Page/Post properties](#page-post-properties)
     + [Setting custom properties](#setting-custom-properties)
     + [Overriding and restoring properties](#overriding-and-restoring-properties)
       - [Special values](#special-values)
@@ -26,13 +30,14 @@
   * [Search Engine Optimization (SEO)](#search-engine-optimization-seo)
     + [Automatic](#automatic)
     + [Manual](#manual-1)
+  * [Demos](#demos)
   * [Limitations](#limitations)
   * [TODO](#todo)
-  * [Demo](#demo)
   * [Contributing](#contributing)
   * [License](#license)
   * [Code of Conduct](#code-of-conduct)
   * [Also by the Author](#also-by-the-author)
+
 
 ## TL;DR
 
@@ -289,6 +294,74 @@ paginate_content:
   single_page: '/full.html'
 ---
 ```
+## Setting up splitting
+
+How your files are split depends on your `separator`:
+
+### Manual mode
+
+If your `separator` is `"<!--page-->"`, just put that wherever you want a split to occur:
+
+```html
+This is a page.
+<!--page-->
+This is another page.
+```
+
+### HTML header mode
+
+If you set your header to "h1" up to "h6", your files will be split at those headers. Both the standard `atx` and `Setext` formats are supported -- the former uses 1 to 6 hashes (`# ` to `###### `) at the start for &lt;h1&gt; to &lt;h6&gt;, while the later uses equals-underscores for &lt;h1&gt; and dash-underscores for &lt;h2&gt;
+
+For example, if your separator is `"h1"`:
+
+```markdown
+# Introduction
+This is a page.
+
+Discussion
+==========
+This is another page
+
+## Point 1
+This is not.
+
+Point 2
+-------
+Neither is this
+
+<h1>Conclusion</h1>
+But this is.
+```
+
+At this time, you'll need at least 4 dashes or equal signs in Setext mode.
+
+### Page headers and footers
+
+Anything above your configured `header` string will appear at the top of the generated pages. Likewise, anything after your `footer` string will appear at the bottom.
+
+```markdown
+This is the header
+<!--page_header-->
+
+This is a page.
+<!--page-->
+This is another page.
+
+<!--page_footer-->
+This is the footer.
+```
+
+If you split your links like so:
+
+```html
+
+This is a [link].
+
+[link]: https://example.com
+```
+
+make sure you put those links below the `footer` so that references to them will work across pages.
+
 
 ## Properties
 
@@ -695,7 +768,7 @@ What about `canonical` for JPv2-generated pages? Unless you have a "view-all" pa
 1. Only the following are currently recognized as references to those anchors:
     - `[description](#something)`
     - `[description]: #something`
-1. The Setext mode for headers (underlining with equal signs [h1] or dashes [h2]) needs to have at least 4 dashes for h2.
+1. The Setext mode for headers (underscoring with equal signs [h1] or dashes [h2]) needs to have at least 4 equal signs or dashes
 1. `auto` only supports non-header separators for now
 
 ## TODO

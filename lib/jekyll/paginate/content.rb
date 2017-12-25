@@ -246,10 +246,10 @@ module Jekyll
       end
 
       def split(item)
-        sep = @config[:separator]
+        sep = @config[:separator].strip
 
         # Special separator: h1-h6
-        if m = /^h([1-6])$/i.match(sep.strip)
+        if m = /^h([1-6])$/i.match(sep)
           # Split on <h2> etc.
 
           level = m[1].to_i
@@ -260,17 +260,24 @@ module Jekyll
           atx = "#" * level
           atx_parts = item.content.split(/(?=^#{atx} )/)
 
+          # HTML symtax <h1> to <h6>
+          htx_parts = []
+          atx_parts.each do |section|
+            htx_parts << section.split(/(?=<#{sep}[^>]*>)/i)
+          end
+          htx_parts.flatten!
+
           if level <= 2
             # Setext syntax: underlined by '=' (h1) or '-' (h2)
             # For now require four '-' to avoid confusion with <hr>
             #   or demo YAML front-matter
             stx = level == 1 ? "=" : '-' * 4
-            atx_parts.each do |section|
+            htx_parts.each do |section|
               init_pages << section.split(/(?=^.+\n#{stx}+$)/)
             end
 
           else
-            init_pages = atx_parts
+            init_pages = htx_parts
           end
 
           init_pages.flatten!
@@ -388,25 +395,24 @@ module Jekyll
           end
 
           # Find the section names from the first h1 etc.
-          atx_loc = stx_loc = page.length
-
+          # TODO: Simplify regex
+          candidates = {}
           if m = /(.*\r?\n|)#+\s+(.*)\s*#*/.match(page)
-            atx_loc = m[1].length
-            atx = m[2]
+            candidates[m[2]] = m[1].length
           end
 
           if m = /(.*\r?\n|)([^\r\n]+)\r?\n[\-=]{4,}\s*\r?\n/.match(page)
-            stx_loc = m[1].length
-            stx = m[2]
+            candidates[m[2]] = m[1].length
           end
 
-          if atx_loc < stx_loc
-            section = atx
-          elsif stx_loc < atx_loc
-            section = stx
+          if m = /(.*\r?\n|)<h([1-6])[^>]*>([^\r\n<]+)([\r\n]|<\/h\1)/i.match(page.gsub(/\r?\n/, ''))
+            candidates[m[3]] = m[1].length
+          end
+
+          if candidates.empty?
+            section = "Untitled"
           else
-            #section = first ? "Introduction" : "Unnamed"
-            section = "Unnamed"
+            section = candidates.sort_by { |k,v| v }.first.flatten[0]
           end
 
           paginator['section'] = section
@@ -637,7 +643,7 @@ module Jekyll
 
         section = items[page-1].pager.section
 
-        format.gsub(/:title/, orig).
+        format.gsub(/:title/, orig || '').
           gsub(/:section/, section).
           gsub(/:num/, page.to_s).
           gsub(/:max/, max.to_s)
