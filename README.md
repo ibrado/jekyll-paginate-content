@@ -333,7 +333,7 @@ Neither is this
 But this is.
 ```
 
-At this time, you'll need at least 4 dashes or equal signs in Setext style headers. Note that Setext only supports &lt;h1&gt; and &lt;h2&gt;.
+At this time, you'll need at least 4 dashes for Setext-style &lt;h2&gt;. Note that Setext only supports &lt;h1&gt; and &lt;h2&gt;.
 
 ### Page headers and footers
 
@@ -405,7 +405,7 @@ These properties/fields are available to your layouts and content via the `pagin
 
 ## Page/Post properties
 
-These properties are automatically set for pages/documents that have been processed, e.g `{{ post.autogen }}`
+These properties are automatically set for pages and other content that have been processed, e.g `{{ post.autogen }}`
 
 | Field                | Description
 |----------------------|----------------------------------------------------------------------
@@ -416,7 +416,7 @@ These properties are automatically set for pages/documents that have been proces
 | `category`, `categories` | `nil` for all except the first page
 |                      |
 | `autogen`            | "jekyll-paginate-content" for all pages
-| `pagination_info`    | `.curr_page` = current page number<br/>`.total_pages` = total number of pages<br/>`.type` = "first", "part", "last", or "single"<br/>`.id` = a string which is the same for all related pages (nanosecond timestamp)
+| `pagination_info`    | `.curr_page` = current page number<br/>`.total_pages` = total number of pages<br/>`.type` = "first", "part", "last", or "single"<br/>`.id` = a string which is the same for all related pages
 
 The tags, categories, and `hidden` are set up this way to avoid duplicate counts and having the parts show up in e.g. your tag index listings. You may override this behavior as discussed [below](#overriding-and-restoring-properties).
 
@@ -687,14 +687,24 @@ You may also want to add a page "flipper" that uses section names:
 ```html
 <!--page_footer-->
 <div>
-{% if paginator.previous_section %}
-&laquo; <a href="{{ paginator.previous_path }}">{{ paginator.previous_section }}</a>
-{% endif %}
-{% if paginator.previous_section and paginator.next_section %} | {% endif %}
-{% if paginator.next_section %}
-  <a href="{{ paginator.next_path }}">{{ paginator.next_section }}</a> &raquo;
-{% endif %}
+  {% if paginator.previous_section %}
+    &laquo; <a href="{{ paginator.previous_path }}">{{ paginator.previous_section }}</a>
+  {% endif %}
+  {% if paginator.previous_section and paginator.next_section %} | {% endif %}
+  {% if paginator.next_section %}
+    <a href="{{ paginator.next_path }}">{{ paginator.next_section }}</a> &raquo;
+  {% endif %}
 </div>
+```
+
+Should there be no available section name, "Untitled" will be returned. You can then handle it like so:
+
+```html
+{% if paginator.previous_section == "Untitled" %}
+  Previous
+{% else %}
+  {{ paginator.previous_section }}
+{% endif %}
 ```
 
 Of course, you always have the option of adding some navigational cues to your content:
