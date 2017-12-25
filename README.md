@@ -2,14 +2,16 @@
 
 [![Gem Version](https://badge.fury.io/rb/jekyll-paginate-content.svg)](https://badge.fury.io/rb/jekyll-paginate-content)
 
-*Jekyll::Paginate::Content* (JPC) is a plugin for [Jekyll](https://jekyllrb.com/) that automatically splits pages, posts, and other content into one or more pages. This can be at points where e.g. `<!--page-->` is inserted, or at the &lt;h1&gt; to &lt;h6&gt; headers. It mimics [jekyll-paginate-v2](https://github.com/sverrirs/jekyll-paginate-v2) (JPv2) naming conventions and features, so if you use that, there is almost nothing new to learn.
+**You may read this documentation [split into several pages](https://ibrado.org/demos/jpc-readme/).**
 
-**Features:** Automatic content splitting into several pages, configurable permalinks, page trail, single-page view, SEO support.
+*Jekyll::Paginate::Content* (JPC) is a plugin for [Jekyll](https://jekyllrb.com/) that automatically splits pages, posts, and other content into one or more pages. This can be at points where e.g. `<!--page-->` is inserted, or at the &lt;h1&gt; to &lt;h6&gt; headers. It mimics [jekyll-paginate-v2](https://github.com/sverrirs/jekyll-paginate-v2) (JPv2) naming conventions and features, so if you use that, you will be in familiar territory.
+
+**Features:** Automatic content splitting into several pages, single-page view, configurable permalinks, page trail/pager, SEO support, self-adjusting internal links, multipage-aware Table Of Contents.
 
 - [Jekyll::Paginate::Content](#jekyllpaginatecontent)
   * [TL;DR](#tldr)
     + [Manual](#manual)
-    + [Automatic, with config overrides](#automatic-with-config-overrides)
+    + [Automatic, with config overrides and mixed syntax](#automatic-with-config-overrides-and-mixed-syntax)
   * [Why use this?](#why-use-this)
   * [Installation](#installation)
   * [Configuration](#configuration)
@@ -18,8 +20,8 @@
     + [Manual mode](#manual-mode)
     + [HTML header mode](#html-header-mode)
     + [Page headers and footers](#page-headers-and-footers)
-  * [Properties](#properties)
-  * [Page/Post properties](#page-post-properties)
+  * [Paginator Properties/Fields](#paginator-propertiesfields)
+  * [Page/post properties](#pagepost-properties)
     + [Setting custom properties](#setting-custom-properties)
     + [Overriding and restoring properties](#overriding-and-restoring-properties)
       - [Special values](#special-values)
@@ -27,17 +29,18 @@
     + [Example](#example)
   * [Pagination trails](#pagination-trails)
     + [Usage](#usage-1)
+    + [Page flipper](#page-flipper)
+  * [Table Of Contents (TOC)](#table-of-contents-toc)
+    + [Excluding sections](#excluding-sections)
   * [Search Engine Optimization (SEO)](#search-engine-optimization-seo)
     + [Automatic](#automatic)
     + [Manual](#manual-1)
   * [Demos](#demos)
   * [Limitations](#limitations)
-  * [TODO](#todo)
   * [Contributing](#contributing)
   * [License](#license)
   * [Code of Conduct](#code-of-conduct)
   * [Also by the Author](#also-by-the-author)
-
 
 ## TL;DR
 
@@ -79,13 +82,13 @@ This goes into the bottom of all pages.
 
 [link]: #lorem
 ```
-[Live demo](https://ibrado.org/demos/3page-manual/)
+[Live demo](https://ibrado.org/demos/jpc-3page-manual.md)
 
-### Automatic, with config overrides
+### Automatic, with config overrides and mixed syntax
 
 ```markdown
 ---
-title: "JPC demo: 3-page auto"
+title: "JPC demo: 3-page auto, mixed syntax"
 layout: page
 paginate: true
 paginate_content:
@@ -94,7 +97,7 @@ paginate_content:
   permalink: /page:numof:max.html
 ---
 
-## Introduction
+<h2>Introduction</h2>
 Hello!
 
 ## What did something?
@@ -109,16 +112,14 @@ What did it do?
 {% if paginator.prev_section %}
 &laquo; <a href="{{ paginator.prev_path }}">{{ paginator.prev_section }}</a>
 {% endif %}
-{% if paginator.prev_section and paginator.next_section %}
-  |
-{% endif %}
+{% if paginator.prev_section and paginator.next_section %} | {% endif %}
 {% if paginator.next_section %}
   <a href="{{ paginator.next_path }}">{{ paginator.next_section }}</a> &raquo;
 {% endif %}
 </div>
 ```
 
-[Live demo](https://ibrado.org/demos/3page-auto/)
+[Live demo](https://ibrado.org/demos/jpc-3page-auto.md)
 
 See other [demos](#demos).
 
@@ -165,7 +166,6 @@ paginate_content:
 
   auto: true                         # Set to true to search for the page separator even if you
                                      #   don't set paginate: true in the front-matter
-                                     #   NOTE: This is slower; only works for non-header separators
                                      # Default: false
 
   separator: "<!--split-->"          # The page separator; default: "<!--page-->"
@@ -280,7 +280,7 @@ paginate_content:
   auto: true
 ```
 
-Note that using `auto` mode will be slower. It currently only works for non-header separators.
+Note that using `auto` mode might be slower on your machine. 
 
 You may also override `_config.yml` settings for a particular file like so:
 
@@ -294,7 +294,7 @@ paginate_content:
   single_page: '/full.html'
 ---
 ```
-## Setting up splitting
+## Splitting content
 
 How your files are split depends on your `separator`:
 
@@ -333,7 +333,7 @@ Neither is this
 But this is.
 ```
 
-At this time, you'll need at least 4 dashes or equal signs in Setext mode.
+At this time, you'll need at least 4 dashes or equal signs in Setext style headers. Note that Setext only supports &lt;h1&gt; and &lt;h2&gt;.
 
 ### Page headers and footers
 
@@ -353,17 +353,21 @@ This is the footer.
 
 If you split your links like so:
 
-```html
-
+```markdown
 This is a [link].
 
 [link]: https://example.com
 ```
 
-make sure you put those links below the `footer` so that references to them will work across pages.
+make sure you put these referenced link definitions below the `footer` so that references to them will work across pages.
 
+### Minimum page length
 
-## Properties
+You may set the minimum length (in characters) using the `minimum` property in `_config.yml` or your front-matter. Should a particular section be too short, the next section will be merged in, and so on until the minimum is reached or there are no more pages.
+
+Note that this length includes markup, not just the actual displayed text, so you may want to take that into consideration. A minimum of 1000 to 2000 should work well.
+
+## Paginator Properties/Fields
 
 These properties/fields are available to your layouts and content via the `paginator` object, e.g. `{{ paginator.page }}`.
 
@@ -380,12 +384,12 @@ These properties/fields are available to your layouts and content via the `pagin
 | `last_page_path`     | `last_path`     | Relative URL to the last page       |
 | `page`               | `page_num`      | Current page number                 |
 | `page_path`          |                 | Path to the current page            |
-| `page_trail`         |                 | Page trail, see [below](#trails)    |
+| `page_trail`         |                 | Page trail, see [below](#pagination-trails)    |
 | `paginated`          | `activated`     | `true` if this is a partial page    |
 | `total_pages`        | `pages`         | Total number of pages               |
 |                      |                 |                                     |
 | `single_page`        | `view_all`      | Path to the original/full page      |
-| `seo`                |                 | HTML header tags for SEO, see [below](#seo)
+| `seo`                |                 | HTML header tags for SEO, see [below](#search-engine-optimization-seo)
 |                      |                 |                                     |
 | `section`            |                 | Text of the first header (&lt;h1&gt; etc.) on this page
 | `previous_section`   | `prev_section`  | Ditto for the previous page         |
@@ -411,10 +415,10 @@ These properties are automatically set for pages/documents that have been proces
 | `tag`, `tags`        | `nil` for all except the first page
 | `category`, `categories` | `nil` for all except the first page
 |                      |
-| `autogen`            | "jekyll-paginate-content" for all but the single-page view
+| `autogen`            | "jekyll-paginate-content" for all pages
 | `pagination_info`    | `.curr_page` = current page number<br/>`.total_pages` = total number of pages<br/>`.type` = "first", "part", "last", or "single"<br/>`.id` = a string which is the same for all related pages (nanosecond timestamp)
 
-The tags, categories, and `hidden` are set up this way to avoid duplicate counts and having the parts show up in e.g. your tag index listings. You may override this behavior as discussed [below](#override).
+The tags, categories, and `hidden` are set up this way to avoid duplicate counts and having the parts show up in e.g. your tag index listings. You may override this behavior as discussed [below](#overriding-and-restoring-properties).
 
 ### Setting custom properties
 
@@ -461,7 +465,6 @@ In your layout, you'd use something like
 
 The single-page view would then show the [Disqus](https://disqus.com/) comments section. 
 
-<a name="override"></a>
 ### Overriding and restoring properties
 
 You can set almost any front-matter property via the `properties` section, except for `title`, `layout`, `date`, `permalink`, and `pagination_info`. Use with caution.
@@ -513,7 +516,6 @@ For reference, the default properties effectively map out to:
         type: 'last'
 
     single:
-      autogen: ~
       pagination_info:
         curr_page: /
         total_pages: /
@@ -567,12 +569,11 @@ The author's `_config.yml` has the following:
 {% else %}
   {% assign share_url = page.url %}
 {% endif %}
-
 ```
 
 ## Pagination trails
 
-<a name="trails"></a>You use `paginator.page_trail` to create a pager that will allow your readers to move from page to page. It is set up as follows:
+You use `paginator.page_trail` to create a pager that will allow your readers to move from page to page. It is set up as follows:
 
 ```yaml
 paginate_content:
@@ -614,7 +615,7 @@ Here is an example lifted from [JPv2's documentation](https://github.com/sverrir
   <ul class="pager">
   {% for trail in paginator.page_trail %}
     <li {% if page.url == trail.path %}class="selected"{% endif %}>
-        <a href="{{ trail.path | prepend: site.url }}" title="{{trail.title}}">{{ trail.num }}</a>
+        <a href="{{ trail.path | prepend: site.baseurl }}" title="{{trail.title}}">{{ trail.num }}</a>
     </li>
   {% endfor %}
   </ul>
@@ -637,38 +638,34 @@ You'll end up with something like this, for page 4:
   <img src="https://raw.githubusercontent.com/ibrado/jekyll-paginate-content/development/res/jpv2-trail.png" />
 </p>
 
-The author's own pager is a little more involved:
+The author's own pager is a little more involved and uses some convenience fields and aliases:
 
 ```html
 {% if paginator.page_trail %}
-  <div class="pager">
-    {% if paginator.is_first %}<span class="pager-inactive">
-    {% else %}<a href="{{ paginator.first_path }}">{% endif %}
-    <i class="fa fa-fast-backward" aria-hidden="true"></i>
-    {% if paginator.is_first %}</span>{% else %}</a>{% endif %}
-
-    {% if paginator.has_previous %}<a href="{{ paginator.previous_path }}">
-    {% else %}<span class="pager-inactive">{% endif %}
-    <i class="fa fa-backward" aria-hidden="true"></i>
-    {% if paginator.has_previous %}</a>{% else %}</span>{% endif %}
+  <div class="pager" style="font-size: 1.4em">
+    {% if paginator.is_first %}
+      <span class="pager-inactive"><i class="fa fa-fast-backward" aria-hidden="true"></i></span>
+      <span class="pager-inactive"><i class="fa fa-backward" aria-hidden="true"></i></span>
+    {% else %}
+      <a href="{{ paginator.first_path }}"><i class="fa fa-fast-backward" aria-hidden="true"></i></a>
+      <a href="{{ paginator.previous_path }}"><i class="fa fa-backward" aria-hidden="true"></i></a>
+    {% endif %} 
 
     {% for p in paginator.page_trail %}
-      {% if p.num  == paginator.page_num %}
-       {{ p.num }}
+      {% if p.num == paginator.page %}
+        {{ p.num }} 
       {% else %}
-      <a href="{{ p.path }}" data-toggle="tooltip" data-placement="top" title="{{ p.title }}">{{ p.num }}</a>
+        <a href="{{ p.path }}" data-toggle="tooltip" data-placement="top" title="{{ p.title }}">{{ p.num }}</a>
       {% endif %}
     {% endfor %}
 
-    {% if paginator.has_next %}<a href="{{ paginator.next_path }}">
-    {% else %}<span class="pager-inactive">{% endif %}
-    <i class="fa fa-forward" aria-hidden="true"></i>
-    {% if paginator.has_next %}</a>{% else %}</span>{% endif %}
-
-    {% if paginator.is_last %}<span class="pager-inactive">
-    {% else %}<a href="{{ paginator.last_path }}">{% endif %}
-    <i class="fa fa-fast-forward" aria-hidden="true"></i>
-    {% if paginator.is_last %}</span>{% else %}</a>{% endif %}
+    {% if paginator.is_last %}
+      <span class="pager-inactive"><i class="fa fa-forward" aria-hidden="true"></i></span>
+      <span class="pager-inactive"><i class="fa fa-fast-forward" aria-hidden="true"></i></span>
+    {% else %}
+      <a href="{{ paginator.next_path }}"><i class="fa fa-forward" aria-hidden="true"></i></a>
+      <a href="{{ paginator.last_path }}"><i class="fa fa-fast-forward" aria-hidden="true"></i></a>
+    {% endif %} 
   </div>
 {% endif %}
 ```
@@ -683,6 +680,23 @@ This results in a pager that looks like this:
   <img src="https://raw.githubusercontent.com/ibrado/jekyll-paginate-content/development/res/ajni-trail-p4.png" />
 </p>
 
+### Page flipper
+
+You may also want to add a page "flipper" that uses section names:
+
+```html
+<!--page_footer-->
+<div>
+{% if paginator.previous_section %}
+&laquo; <a href="{{ paginator.previous_path }}">{{ paginator.previous_section }}</a>
+{% endif %}
+{% if paginator.previous_section and paginator.next_section %} | {% endif %}
+{% if paginator.next_section %}
+  <a href="{{ paginator.next_path }}">{{ paginator.next_section }}</a> &raquo;
+{% endif %}
+</div>
+```
+
 Of course, you always have the option of adding some navigational cues to your content:
 
 ```html
@@ -693,7 +707,49 @@ Of course, you always have the option of adding some navigational cues to your c
 
 This text will not appear in the single-page view.
 
-<a name="seo"></a>
+## Table Of Contents (TOC)
+
+JPC automatically generates a Table of Contents for you. To use this from within your content, simply insert the following:
+
+```
+  {{ paginator.toc.simple }}
+```
+
+If you want to use this from an HTML layout, e.g. an included `sidebar.html`:
+
+```
+  {{ paginator.toc.simple | markdownify }}
+```
+
+The difference between this and the one built into [kramdown](https://kramdown.gettalong.org/), the default Jekyll Markdown engine, is that it is aware that content may be split across several pages now, and adjusts links depending on the current page.
+
+> The reason `paginator.toc.simple` is used vs just `paginator.toc` is to allow for further TOC features in the future.
+
+### Excluding sections
+
+Should you want some fields excluded from the Table Of Contents, add them to the `toc_exclude` option in your site configuration or content front-matter:
+
+```yaml
+paginate_content:
+  toc_exclude: "Table Of Contents"
+```
+or
+
+```yaml
+paginate_content:
+  toc_exclude: 
+    - "Table Of Contents"
+    - "Shy Section"
+```
+
+The generated section ids follow the usual convention:
+
+1. Convert the section name to lowercase
+1. Remove all punctuation
+1. Convert multiple spaces to a single space
+1. Convert spaces to dashes
+1. If that id already exists, add "-1", "-2", etc. until the id is unique
+
 ## Search Engine Optimization (SEO)
 
 Now that your site features split pages (*finally!*), how do you optimize it for search engines?
@@ -733,7 +789,6 @@ To give your non-paginated content a `canonical` link as well, try this:
   <link rel="canonical" href="{{ site.url | append: page.url }}" />
 {% endunless %}
 ```
-
 ### Manual
 
 If you include a header file that is also included by files that JPv2 may process, such as your home `index.html`, it would be better to do it this way:
@@ -755,25 +810,15 @@ This way it works with JPv2, JPC, and with no paginator active. The author uses 
 What about `canonical` for JPv2-generated pages? Unless you have a "view-all" page that includes all your unpaginated posts and you want search engines to use that possibly huge page as the primary search result, it is probably best to just not put a `canonical` link at all.
 
 ## Demos
-<a name="demos"></a>
 
-1. TL;DR example as a [post](https://ibrado.org/2017/12/jpc-demo-post/), as an item in a [collection](https://ibrado.org/demos/jekyll-paginate-content/), and as a [page](https://ibrado.org/jpcdemo/).
-1. [This README](https://ibrado.org/demos/jekyll-paginate-content/README/), paginated
+1. TL;DR demos: [manual](https://ibrado.org/demos/jpc-3page-manual.md), [automatic](https://ibrado.org/demos/jpc-3page-auto.md)
+1. Simple example as a [post](https://ibrado.org/2017/12/jpc-demo-post/), as an item in a [collection](https://ibrado.org/demos/jpc/), and as a [page](https://ibrado.org/jpc-demo/).
+1. [This README](https://ibrado.org/demos/jpc-readme/), autopaginated
 
 ## Limitations
 
-1. Only the following formats are currently recognized as anchors:
-    - `<a name="something">(possibly something here)</a>`
-    - `<some_element ... id="something" ...>`
-1. Only the following are currently recognized as references to those anchors:
-    - `[description](#something)`
-    - `[description]: #something`
-1. The Setext mode for headers (underscoring with equal signs [h1] or dashes [h2]) needs to have at least 4 equal signs or dashes
-1. `auto` only supports non-header separators for now
-
-## TODO
-
-1. Automatic Table of Contents
+1. Some link/anchor formats may not be supported yet; inform author, please.
+1. The Setext mode, i.e. underscoring header names with equal signs (<tt>&lt;h1&gt;</tt>) or dashes (<tt>&lt;h2&gt;</tt>), needs to have at least 4 dashes for <tt>&lt;h2&gt;</tt>.
 
 ## Contributing
 
