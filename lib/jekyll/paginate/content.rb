@@ -57,6 +57,7 @@ module Jekyll
 
           :single_page => sconfig['single_page'] || '/view-all/',
           :seo_canonical => sconfig['seo_canonical'].nil? || sconfig['seo_canonical'],
+          :toc_exclude => sconfig['toc_exclude'],
 
           :properties => properties,
           :user_props => sconfig['properties'] || {}
@@ -269,11 +270,22 @@ module Jekyll
         seen_anchors = {}
         list_chars = ['-','*','+']
 
+        if m = /^h([1-6])$/.match(sep)
+          base_level = m[1].to_i - 1
+        else
+          base_level = 5
+        end
+
+        lowest_level = 5
+
         # TODO: Optimize this regex
         content.scan(/(^|\r?\n)((#+)\s*([^\r\n#]+)#*\r?\n|([^\r\n]+)\r?\n(=+|\-{4,})\s*\r?\n|<h([1-6])[^>]*>([^\r\n<]+)(\s*<\/h\7>))/mi).each do |m|
           #header = (m[3] || m[4] || m[7]).strip
-          markup = m[1].strip
           header = m[3] || m[4] || m[7]
+
+          next if @config[:toc_exclude] && @config[:toc_exclude].include?(header)
+
+          markup = m[1].strip
 
           # Level is 0-based for convenience
           if m[3]
@@ -283,6 +295,8 @@ module Jekyll
           elsif m[7]
             level = m[6].to_i - 1
           end
+
+          lowest_level = [level, lowest_level].min
 
           #puts "Markup: #{markup.inspect}"
           orig_anchor = anchor = header.downcase.gsub(/[[:punct:]]/, '').gsub(/\s+/, '-')
@@ -296,7 +310,7 @@ module Jekyll
 
           escaped = Regexp.escape(markup)
           markup = "$$_#{markup}_$$"
-          puts "Replacing #{escaped} with #{markup}#{$/}{: id=\"#{anchor}\"}#{$/}"
+          #puts "Replacing #{escaped} with #{markup}#{$/}{: id=\"#{anchor}\"}#{$/}"
 
           content.sub!(/#{escaped}\s*(?=#|\r?\n)/, "#{markup}#{$/}{: id=\"#{anchor}\"}#{$/}")
           #puts "Saw #{header} level #{level}, anchor #{anchor}"
@@ -309,7 +323,12 @@ module Jekyll
           toc << "#{indent}#{char} [#{header}](##{anchor})#{$/}"
         end
 
-        content.gsub!(/\$\$_(.*?)_\$\$/, '\1')
+        if lowest_level > 0
+          excess = '  ' * lowest_level
+          toc.gsub!(/^#{excess}/, '')
+        end
+
+        content.gsub!(/\$\$_(.*?)_\$\$/m, '\1')
 
         #puts "========= table of contents ========="
         #puts toc
@@ -417,15 +436,15 @@ module Jekyll
           # TODO: Try to combine these
           page.scan(/<a\s+name=['"](\S+)['"]>[^<]*<\/a>/i).flatten.each do |a|
             a_locations[a] = i
-            puts "Anchor #{a} found at #{i} by name"
+            #puts "Anchor #{a} found at #{i} by name"
           end
           page.scan(/<[^>]*id=['"](\S+)['"][^>]*>/i).flatten.each do |a|
             a_locations[a] = i
-            puts "Anchor #{a} found at #{i} by id"
+            #puts "Anchor #{a} found at #{i} by id"
           end
           page.scan(/{:.*id=['"](\S+)['"][^}]*}/i).flatten.each do |a|
             a_locations[a] = i
-            puts "Anchor #{a} found at #{i} by markdown"
+            #puts "Anchor #{a} found at #{i} by markdown"
           end
           i += 1
         end
