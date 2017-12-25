@@ -249,8 +249,8 @@ module Jekyll
         sep = @config[:separator].strip
 
         # Escape special characters inside code blocks
-        item.content.scan(/```(.*?)```/m).each do |e|
-          escaped = e[0].gsub(/([#<\-=\{])/, '~|\1|')
+        item.content.scan(/(```|~~~+)(.*?)\1/m).each do |e|
+          escaped = e[0].gsub(/([#<\-=])/, '~|\1|')
           item.content.gsub!(e[0], escaped)
         end
 
