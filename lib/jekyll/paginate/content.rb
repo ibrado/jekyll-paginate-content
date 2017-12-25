@@ -89,7 +89,7 @@ module Jekyll
               process = items.select { |item| item.content.include?(@config[:separator]) }
             end
           else
-            items.select { |item| item.data['paginate'] }
+            process = items.select { |item| item.data['paginate'] }
           end
 
           process.each do |item|
