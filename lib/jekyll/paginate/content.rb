@@ -248,6 +248,12 @@ module Jekyll
       def split(item)
         sep = @config[:separator].strip
 
+        # Escape special characters inside code blocks
+        item.content.scan(/```(.*?)```/m).each do |e|
+          escaped = e[0].gsub(/([#<\-=\{])/, '~|\1|')
+          item.content.gsub!(e[0], escaped)
+        end
+
         # Special separator: h1-h6
         if m = /^h([1-6])$/i.match(sep)
           # Split on <h2> etc.
@@ -352,6 +358,9 @@ module Jekyll
         ######################################## Main processing
 
         pages.each do |page|
+          # Unescape special characters inside code blocks
+          page.gsub!(/~\|(.)\|/, '\1')
+
           plink_all = nil
           plink_next = nil
           plink_prev = nil
