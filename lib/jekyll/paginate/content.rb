@@ -271,7 +271,8 @@ module Jekyll
         seen_anchors = {}
         list_chars = ['-','*','+']
 
-        content.scan(/(^|\r?\n)((#+)\s*([^\r\n#]+)#*|([^\r\n]+)\r?\n([\-=]{4,})\s*\r?\n|<h([1-6])[^>]*>([^\r\n<]+)(\s*<\/h\7>))/mi).each do |m|
+        #content.scan(/(^|\r?\n)((#+)\s*([^\r\n#]+)#*|([^\r\n]+)\r?\n([\-=]{4,})\s*\r?\n|<h([1-6])[^>]*>([^\r\n<]+)(\s*<\/h\7>))/mi).each do |m|
+        content.scan(/(^|\r?\n)((#+)\s*([^\r\n#]+)#*|([^\r\n]+)\r?\n(=+|\-{4,})\s*\r?\n|<h([1-6])[^>]*>([^\r\n<]+)(\s*<\/h\7>))/mi).each do |m|
           #header = (m[3] || m[4] || m[7]).strip
           markup = m[1].strip
           header = m[3] || m[4] || m[7]
@@ -467,7 +468,7 @@ module Jekyll
             candidates[m[2]] = m[1].length
           end
 
-          if m = /(.*\r?\n|)([^\r\n]+)\r?\n[\-=]{4,}\s*\r?\n/.match(page)
+          if m = /(.*\r?\n|)([^\r\n]+)\r?\n(=+|\-{4,})\s*\r?\n/.match(page)
             candidates[m[2]] = m[1].length
           end
 
