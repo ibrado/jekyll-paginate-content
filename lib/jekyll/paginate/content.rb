@@ -41,9 +41,7 @@ module Jekyll
 
           'last' => {},
 
-          'single' => {
-            'autogen' => nil
-          }
+          'single' => {}
         }
 
         @config = {
@@ -256,7 +254,7 @@ module Jekyll
         sep = @config[:separator].downcase.strip
 
         #content = item.content.dup
-        # Update the links for the original document
+        # Update the header IDs the original document
         content = item.content
 
         # Escape special characters inside code blocks
@@ -361,6 +359,7 @@ module Jekyll
         return if init_pages.length == 1
 
         # Unescape special characters inside code blocks, for main content
+        # It was modified by adding header IDs
         content.gsub!(/~\|(.)\|/, '\1')
 
         # Make page length the minimum, if specified
@@ -590,6 +589,7 @@ module Jekyll
 
           _adjust_links(new_items, item.content, a_locations, i+1)
 
+          # Adjust the TOC relative to this page
           toc = @toc.dup
           _adjust_links(new_items, toc, a_locations, i+1)
 
