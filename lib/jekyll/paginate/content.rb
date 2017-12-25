@@ -82,9 +82,15 @@ module Jekyll
           total_parts = 0
           total_copies = 0
 
-          process = @config[:auto] ?
-            items.select { |item| item.content.include?(@config[:separator]) } :
+          if @config[:auto]
+            if m = /^h(\d)/i.match(@config[:separator])
+              process = items.select { |item| /(\n|)(<h#{m[1]}|-{4,}|={4,})/.match?(item.content) }
+            else
+              process = items.select { |item| item.content.include?(@config[:separator]) }
+            end
+          else
             items.select { |item| item.data['paginate'] }
+          end
 
           process.each do |item|
             pager = Paginator.new(site, collection, item, @config)
@@ -246,16 +252,16 @@ module Jekyll
       end
 
       def split(item)
-        sep = @config[:separator].strip
+        sep = @config[:separator].downcase.strip
 
         # Escape special characters inside code blocks
         item.content.scan(/(```|~~~+)(.*?)\1/m).each do |e|
-          escaped = e[0].gsub(/([#<\-=])/, '~|\1|')
-          item.content.gsub!(e[0], escaped)
+          escaped = e[1].gsub(/([#<\-=])/, '~|\1|')
+          item.content.gsub!(e[1], escaped)
         end
 
         # Special separator: h1-h6
-        if m = /^h([1-6])$/i.match(sep)
+        if m = /^h([1-6])$/.match(sep)
           # Split on <h2> etc.
 
           level = m[1].to_i
