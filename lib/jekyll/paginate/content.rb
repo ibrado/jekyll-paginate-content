@@ -280,7 +280,6 @@ module Jekyll
 
         # TODO: Optimize this regex
         content.scan(/(^|\r?\n)((#+)\s*([^\r\n#]+)#*\r?\n|([^\r\n]+)\r?\n(=+|\-{4,})\s*\r?\n|<h([1-6])[^>]*>([^\r\n<]+)(\s*<\/h\7>))/mi).each do |m|
-          #header = (m[3] || m[4] || m[7]).strip
           header = m[3] || m[4] || m[7]
 
           next if @config[:toc_exclude] && @config[:toc_exclude].include?(header)
@@ -612,7 +611,7 @@ module Jekyll
           toc = @toc.dup
           _adjust_links(new_items, toc, a_locations, i+1)
 
-          item.pager.toc = toc
+          item.pager.toc = { 'simple' => toc }
 
           item.pager.page_trail = _page_trail(base, new_items, i+1,
             new_items.length, t_config)
@@ -663,7 +662,9 @@ module Jekyll
         single_paginator = {
           'first_page_path' => first_page_path,
           'total_pages' => total_pages,
-          'toc' => @toc,
+          'toc' => {
+            'simple' => @toc
+          },
           'seo' => {
             'links' => seo,
             'canonical' => seo
