@@ -254,10 +254,12 @@ module Jekyll
       def split(item)
         sep = @config[:separator].downcase.strip
 
+        content = item.content.dup
+
         # Escape special characters inside code blocks
-        item.content.scan(/(```|~~~+)(.*?)\1/m).each do |e|
+        content.scan(/(```|~~~+)(.*?)\1/m).each do |e|
           escaped = e[1].gsub(/([#<\-=])/, '~|\1|')
-          item.content.gsub!(e[1], escaped)
+          content.gsub!(e[1], escaped)
         end
 
         # Special separator: h1-h6
@@ -270,7 +272,7 @@ module Jekyll
 
           # atx syntax: Prefixed by one or more '#'
           atx = "#" * level
-          atx_parts = item.content.split(/(?=^#{atx} )/)
+          atx_parts = content.split(/(?=^#{atx} )/)
 
           # HTML symtax <h1> to <h6>
           htx_parts = []
@@ -294,7 +296,7 @@ module Jekyll
 
           init_pages.flatten!
         else
-          init_pages = item.content.split(sep)
+          init_pages = content.split(sep)
         end
 
         return if init_pages.length == 1
