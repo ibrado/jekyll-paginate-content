@@ -396,6 +396,7 @@ These properties/fields are available to your layouts and content via the `pagin
 |                      |                 |                                     |
 | `single_page`        | `view_all`      | Path to the original/full page      |
 | `seo`                |                 | HTML header tags for SEO, see [below](#search-engine-optimization-seo)
+| `toc`                |                 | Table Of Contents generator, see [below](#table-of-contents-toc)
 |                      |                 |                                     |
 | `section`            |                 | Text of the first header (&lt;h1&gt; etc.) on this page
 | `previous_section`   | `prev_section`  | Ditto for the previous page         |
