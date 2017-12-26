@@ -2,7 +2,7 @@
 
 [![Gem Version](https://badge.fury.io/rb/jekyll-paginate-content.svg)](https://badge.fury.io/rb/jekyll-paginate-content)
 
-**You may read this documentation [split into several pages](https://ibrado.org/demos/jpc-readme/).**
+**You may read this documentation [split across several pages](https://ibrado.org/demos/jpc-readme/).**
 
 *Jekyll::Paginate::Content* (JPC) is a plugin for [Jekyll](https://jekyllrb.com/) that automatically splits pages, posts, and other content into one or more pages. This can be at points where e.g. `<!--page-->` is inserted, or at the &lt;h1&gt; to &lt;h6&gt; headers. It mimics [jekyll-paginate-v2](https://github.com/sverrirs/jekyll-paginate-v2) (JPv2) naming conventions and features, so if you use that, you will be in familiar territory.
 
@@ -21,6 +21,7 @@
     + [HTML header mode](#html-header-mode)
     + [Page headers and footers](#page-headers-and-footers)
   * [Paginator Properties/Fields](#paginator-propertiesfields)
+    + [site.baseurl](#sitebaseurl)
   * [Page/post properties](#pagepost-properties)
     + [Setting custom properties](#setting-custom-properties)
     + [Overriding and restoring properties](#overriding-and-restoring-properties)
@@ -33,8 +34,7 @@
   * [Table Of Contents (TOC)](#table-of-contents-toc)
     + [Excluding sections](#excluding-sections)
   * [Search Engine Optimization (SEO)](#search-engine-optimization-seo)
-    + [Automatic](#automatic)
-    + [Manual](#manual-1)
+    + [Unified approach](#unified-approach)
   * [Demos](#demos)
   * [Limitations](#limitations)
   * [Contributing](#contributing)
@@ -201,6 +201,8 @@ paginate_content:
 
   seo_canonical: false               # Set link ref="canonical" to the view-all page; default: true
 
+  prepend_baseurl: false             # Prepend the site.baseurl to paths; default: true
+
   #properties:                       # Set properties per type of page, see below
   #  all:
   #    field1: value1
@@ -250,6 +252,8 @@ paginate_content:
   #  after: 0
 
   #seo_canonical: true
+
+  #prepend_baseurl: true
 
   #properties:
   #  all:
@@ -402,6 +406,9 @@ These properties/fields are available to your layouts and content via the `pagin
 | `next_is_last`       |                 | `true` if this page is next-to-last |
 | `previous_is_first`  | `prev_is_first` | `true` if this is the second page   |
 
+### site.baseurl
+
+By default, JPC automatically prepends your `site.baseurl` to generated paths so you don't have to do it yourself. If you don't like this behavior, set `prepend_baseurl: false` in your configuration.
 
 ## Page/Post properties
 
@@ -607,15 +614,14 @@ Let's say your document has 7 pages, and you have a `trail` as above. The pager 
 | `path`  | The path to the page
 | `title` | The title of the page
 
-Here is an example lifted from [JPv2's documentation](https://github.com/sverrirs/jekyll-paginate-v2/blob/master/README-GENERATOR.md#creating-pagination-trails):
-
+Here is an example adapted from [JPv2's documentation](https://github.com/sverrirs/jekyll-paginate-v2/blob/master/README-GENERATOR.md#creating-pagination-trails). Note that you don't need to prepend `site.baseurl` to `trail.path` as it is automatically added in by JPC [by default](#sitebaseurl).
 
 ```html
 {% if paginator.page_trail %}
   <ul class="pager">
   {% for trail in paginator.page_trail %}
     <li {% if page.url == trail.path %}class="selected"{% endif %}>
-        <a href="{{ trail.path | prepend: site.baseurl }}" title="{{trail.title}}">{{ trail.num }}</a>
+        <a href="{{ trail.path }}" title="{{ trail.title }}">{{ trail.num }}</a>
     </li>
   {% endfor %}
   </ul>
@@ -773,9 +779,7 @@ Now that your site features split pages (*finally!*), how do you optimize it for
 | `next`      | Ditto for the next page, if applicable
 | `links`     | All of the above, combined
 
-### Automatic
-
-If you have a dedicated HTML header for the content that you paginate, simply add the following somewhere inside the <tt>&lt;head&gt;</tt>:
+You could simply add the following somewhere inside the <tt>&lt;head&gt;</tt> of your document:
 
 ```
 {{ paginator.seo.links }}
@@ -791,31 +795,27 @@ It will produce up to three lines, like so (assuming you are on page 5):
 
 `rel="prev"` and/or `rel="next"` will not be included if there is no previous and/or next page, respectively. If you don't want to set canonical to the single-view page, just set `seo_canonical` in your `_config.yml` to `false`.
 
-To give your non-paginated content a `canonical` link as well, try this:
+### Unified approach
+
+It would be better to use the following approach, though:
 
 ```html
-{{ paginator.seo.links }}
 {% unless paginator %}
-  <link rel="canonical" href="{{ site.url | append: page.url }}" />
+  <link rel="canonical" href="{{ site.canonical }}{{ site.baseurl }}{{ page.url }}" />
 {% endunless %}
-```
-### Manual
-
-If you include a header file that is also included by files that JPv2 may process, such as your home `index.html`, it would be better to do it this way:
-
-```html
-{{ paginator.seo.canonical }}
-{% unless paginator %}
-  <link rel="canonical" href="{{ site.url | append: page.url }}" />
-{% endunless %}
-{% if paginator.previous_page_path %}
-  <link rel="prev" href="{{ site.url | append: paginator.previous_page_path }}" />
-{% endif %}
-{% if paginator.next_page_path %}
-  <link rel="next" href="{{ site.url | append: paginator.next_page_path }}" />
+{% if paginator.seo.links %}
+  {{ paginator.seo.links }}
+{% else %}
+  {% if paginator.previous_page_path %}
+  <link rel="prev" href="{{ site.url }}{{ site.baseurl }}{{ paginator.previous_page_path }}" />
+  {% endif %}
+  {% if paginator.next_page_path %}
+  <link rel="next" href="{{ site.url }}{{ site.baseurl }}{{ paginator.next_page_path }}" />
+  {% endif %}
 {% endif %}
 ```
-This way it works with JPv2, JPC, and with no paginator active. The author uses this method himself.
+
+This way it works with JPv2, JPC, and with no paginator active.
 
 What about `canonical` for JPv2-generated pages? Unless you have a "view-all" page that includes all your unpaginated posts and you want search engines to use that possibly huge page as the primary search result, it is probably best to just not put a `canonical` link at all.
 

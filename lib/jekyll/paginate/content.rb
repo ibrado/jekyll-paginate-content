@@ -44,13 +44,15 @@ module Jekyll
           'single' => {}
         }
 
+        base_url = (sconfig['prepend_baseurl'].nil? || sconfig['prepend_baseurl']) ? site.config['baseurl'] : ''
+
         @config = {
           :collections => collections,
           :title => sconfig['title'],
           :permalink => sconfig['permalink'] || '/:num/',
           :trail => sconfig['trail'] || {},
           :auto => sconfig['auto'],
-          :base_url => site.config['baseurl'] || '',
+          :base_url => base_url,
 
           :separator => sconfig['separator'] || '<!--page-->',
           :header => sconfig['header'] || '<!--page_header-->',
