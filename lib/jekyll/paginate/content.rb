@@ -50,6 +50,7 @@ module Jekyll
           :permalink => sconfig['permalink'] || '/:num/',
           :trail => sconfig['trail'] || {},
           :auto => sconfig['auto'],
+          :base_url => site.config['baseurl'] || '',
 
           :separator => sconfig['separator'] || '<!--page-->',
           :header => sconfig['header'] || '<!--page_header-->',
@@ -63,9 +64,7 @@ module Jekyll
           :user_props => sconfig['properties'] || {}
         }
 
-        #p_ext = File.extname(permalink)
-        #s_ext = File.extname(site.config['permalink'].gsub(':',''))
-        #@default_ext = (p_ext.empty? ? nil : p_ext) || (s_ext.empty? ? nil : s_ext) || '.html'
+        # Run through each specified collection
 
         collections.each do |collection|
           if collection == "pages"
@@ -254,7 +253,6 @@ module Jekyll
       def split(item)
         sep = @config[:separator].downcase.strip
 
-        #content = item.content.dup
         # Update the header IDs the original document
         content = item.content
 
@@ -264,7 +262,7 @@ module Jekyll
           content.gsub!(e[1], escaped)
         end
 
-        # Generate the TOC
+        # Generate TOC
         toc = ""
 
         seen_anchors = {}
@@ -297,7 +295,6 @@ module Jekyll
 
           lowest_level = [level, lowest_level].min
 
-          #puts "Markup: #{markup.inspect}"
           orig_anchor = anchor = header.downcase.gsub(/[[:punct:]]/, '').gsub(/\s+/, '-')
 
           ctr = 1
@@ -307,16 +304,14 @@ module Jekyll
           end
           seen_anchors[anchor] = 1
 
+          # Escape the header so we don't match again
+          #  for the same header text in a different location
           escaped = Regexp.escape(markup)
           markup = "$$_#{markup}_$$"
-          #puts "Replacing #{escaped} with #{markup}#{$/}{: id=\"#{anchor}\"}#{$/}"
 
           content.sub!(/#{escaped}\s*(?=#|\r?\n)/, "#{markup}#{$/}{: id=\"#{anchor}\"}#{$/}")
-          #puts "Saw #{header} level #{level}, anchor #{anchor}"
-          #puts "--------------------------------------------------"
-          #puts content
-          #puts "--------------------------------------------------"
 
+          # Markdown indent
           char = list_chars[level % 3]
           indent = '  ' * level
           toc << "#{indent}#{char} [#{header}](##{anchor})#{$/}"
@@ -327,17 +322,12 @@ module Jekyll
           toc.gsub!(/^#{excess}/, '')
         end
 
+        # Restore original header text
         content.gsub!(/\$\$_(.*?)_\$\$/m, '\1')
-
-        #puts "========= table of contents ========="
-        #puts toc
-        #puts "====================================="
 
         @toc = toc
 
-        #puts content
-
-        # Special separator: h1-h6
+        # Handle splitting by headers, h1-h6
         if m = /^h([1-6])$/.match(sep)
           # Split on <h2> etc.
 
@@ -377,7 +367,7 @@ module Jekyll
         return if init_pages.length == 1
 
         # Unescape special characters inside code blocks, for main content
-        # It was modified by adding header IDs
+        # Main content was modified by adding header IDs
         content.gsub!(/~\|(.)\|/, '\1')
 
         # Make page length the minimum, if specified
@@ -412,10 +402,11 @@ module Jekyll
         dirname = ""
         filename = ""
 
-        # For SEO
-        site_url = @site.config['canonical'] || @site.config['url']
+        # For SEO; 'canonical' is a personal override ;-)
+        site_url = (@site.config['canonical'] || @site.config['url']) + @site.config['baseurl']
         site_url.gsub!(/\/$/, '')
 
+        # For the permalink
         base = item.url
 
         user_props = @config[:user_props]
@@ -432,18 +423,10 @@ module Jekyll
         a_locations = {}
         i = 1
         pages.each do |page|
-          # TODO: Try to combine these
-          page.scan(/<a\s+name=['"](\S+)['"]>[^<]*<\/a>/i).flatten.each do |a|
-            a_locations[a] = i
-            #puts "Anchor #{a} found at #{i} by name"
-          end
-          page.scan(/<[^>]*id=['"](\S+)['"][^>]*>/i).flatten.each do |a|
-            a_locations[a] = i
-            #puts "Anchor #{a} found at #{i} by id"
-          end
-          page.scan(/{:.*id=['"](\S+)['"][^}]*}/i).flatten.each do |a|
-            a_locations[a] = i
-            #puts "Anchor #{a} found at #{i} by markdown"
+          # TODO: Optimize this regex
+          page.scan(/<a\s+name=['"](\S+)['"]>[^<]*<\/a>|<[^>]*id=['"](\S+)['"][^>]*>|{:.*id=['"](\S+)['"][^}]*}/i).each do |a|
+            anchor = a[1] || a[2] || a[3]
+            a_locations[anchor] = i
           end
           i += 1
         end
@@ -466,13 +449,13 @@ module Jekyll
           if m = base.match(/(.*\/[^\.]*)(\.[^\.]+)$/)
             # /.../filename.ext
             plink =  _permalink(m[1], num, max)
+            plink_all = m[1] + @config[:single_page]
             plink_prev = _permalink(m[1], num-1, max) if !first
             plink_next = _permalink(m[1],num+1, max) if !last
-            plink_all = m[1] + @config[:single_page]
           else
             # /.../folder/
-            plink_all = base + @config[:single_page]
             plink = _permalink(base, num, max)
+            plink_all = base + @config[:single_page]
             plink_prev = _permalink(base, num-1, max) if !first
             plink_next = _permalink(base, num+1, max) if !last
           end
@@ -497,7 +480,7 @@ module Jekyll
           end
 
           # Find the section names from the first h1 etc.
-          # TODO: Simplify regex
+          # TODO: Simplify/merge regex
           candidates = {}
           if m = /(.*\r?\n|)#+\s+(.*)\s*#*/.match(page)
             candidates[m[2]] = m[1].length
@@ -521,33 +504,33 @@ module Jekyll
 
           paginator['paginated'] = true
           paginator['page_num'] = num
-          paginator['page_path'] = _permalink(base, num, max)
+          paginator['page_path'] = @config[:base_url] + _permalink(base, num, max)
 
           paginator['first_page'] = 1
-          paginator['first_page_path'] = base
+          paginator['first_page_path'] = @config[:base_url] + base
 
           paginator['last_page'] = pages.length
-          paginator['last_page_path'] = _permalink(base, max, max)
+          paginator['last_page_path'] = @config[:base_url] + _permalink(base, max, max)
 
           paginator['total_pages'] = max
 
-          paginator['single_page'] = plink_all
+          paginator['single_page'] = @config[:base_url] + plink_all
 
           if first
             paginator['is_first'] = true
-            first_page_path = base
+            first_page_path = @config[:base_url] + base
             total_pages = max
             single_page = plink_all
           else
             paginator['previous_page'] = num - 1
-            paginator['previous_page_path'] =  plink_prev
+            paginator['previous_page_path'] =  @config[:base_url] + plink_prev
           end
 
           if last
             paginator['is_last'] = true
           else
             paginator['next_page'] = num + 1
-            paginator['next_page_path'] = plink_next
+            paginator['next_page_path'] = @config[:base_url] + plink_next
           end
 
           paginator['previous_is_first'] = (num == 2)
@@ -613,7 +596,7 @@ module Jekyll
 
           item.pager.toc = { 'simple' => toc }
 
-          item.pager.page_trail = _page_trail(base, new_items, i+1,
+          item.pager.page_trail = _page_trail(@config[:base_url] + base, new_items, i+1,
             new_items.length, t_config)
 
           # Previous/next section name assignments
@@ -784,7 +767,7 @@ module Jekyll
         content.scan(/\[[^\]]+\]\(#(.*)\)/i).flatten.each do |a|
           if (page_num = a_locations[a]) && (page_num != num)
             content.gsub!(/(\[[^\]]+\]\()##{a}(\))/i,
-              '\1'+new_items[page_num-1].data['permalink']+'#'+a+'\2')
+              '\1' + @site.config['baseurl'] + new_items[page_num-1].data['permalink']+'#'+a+'\2')
           end
         end
 
@@ -792,13 +775,11 @@ module Jekyll
         content.scan(/\[[^\]]+\]:\s*#(\S+)/i).flatten.each do |a|
           if (page_num = a_locations[a]) && (page_num != num)
             content.gsub!(/(\[[^\]]+\]:\s*)##{a}/i,
-              '\1'+new_items[page_num-1].data['permalink']+'#'+a)
+              '\1' + @site.config['baseurl'] + new_items[page_num-1].data['permalink']+'#'+a)
           end
         end
 
-
       end
-
     end
   end
 end
