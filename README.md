@@ -110,7 +110,7 @@ What did it do?
 <!--page_footer-->
 <div>
 {% if paginator.prev_section %}
-&laquo; <a href="{{ paginator.prev_path }}">{{ paginator.prev_section }}</a>
+  &laquo; <a href="{{ paginator.prev_path }}">{{ paginator.prev_section }}</a>
 {% endif %}
 {% if paginator.prev_section and paginator.next_section %} | {% endif %}
 {% if paginator.next_section %}
@@ -628,7 +628,7 @@ Here is an example adapted from [JPv2's documentation](https://github.com/sverri
 {% endif %}
 ```
 
-and its [accompanying style](https://github.com/sverrirs/jekyll-paginate-v2/blob/master/examples/03-tags/_layouts/home.html):
+Its [accompanying style](https://github.com/sverrirs/jekyll-paginate-v2/blob/master/examples/03-tags/_layouts/home.html):
 
 ```html
 <style>
@@ -641,14 +641,14 @@ and its [accompanying style](https://github.com/sverrirs/jekyll-paginate-v2/blob
 You'll end up with something like this, for page 4:
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ibrado/jekyll-paginate-content/development/res/jpv2-trail.png" />
+  <img src="https://raw.githubusercontent.com/ibrado/jekyll-paginate-content/master/res/jpv2-trail.png" />
 </p>
 
 The author's own pager is a little more involved and uses some convenience fields and aliases:
 
 ```html
 {% if paginator.page_trail %}
-  <div class="pager" style="font-size: 1.4em">
+  <div class="pager">
     {% if paginator.is_first %}
       <span class="pager-inactive"><i class="fa fa-fast-backward" aria-hidden="true"></i></span>
       <span class="pager-inactive"><i class="fa fa-backward" aria-hidden="true"></i></span>
@@ -679,11 +679,11 @@ The author's own pager is a little more involved and uses some convenience field
 This results in a pager that looks like this:
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ibrado/jekyll-paginate-content/development/res/ajni-trail-p1.png" />
+  <img src="https://raw.githubusercontent.com/ibrado/jekyll-paginate-content/master/res/ajni-trail-p1.png" />
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ibrado/jekyll-paginate-content/development/res/ajni-trail-p4.png" />
+  <img src="https://raw.githubusercontent.com/ibrado/jekyll-paginate-content/master/res/ajni-trail-p4.png" />
 </p>
 
 ### Page flipper
@@ -804,7 +804,7 @@ It would be better to use the following approach, though:
   <link rel="canonical" href="{{ site.canonical }}{{ site.baseurl }}{{ page.url }}" />
 {% endunless %}
 {% if paginator.seo.links %}
-  {{ paginator.seo.links }}
+{{ paginator.seo.links }}
 {% else %}
   {% if paginator.previous_page_path %}
   <link rel="prev" href="{{ site.url }}{{ site.baseurl }}{{ paginator.previous_page_path }}" />
