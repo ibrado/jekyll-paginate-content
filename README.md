@@ -2,7 +2,7 @@
 
 [![Gem Version](https://badge.fury.io/rb/jekyll-paginate-content.svg)](https://badge.fury.io/rb/jekyll-paginate-content)
 
-**You may read this documentation [split across several pages](https://ibrado.org/demos/jpc-readme/).**
+**You may read this documentation [split across several pages](https://ibrado.org/jpc/readme/).**
 
 *Jekyll::Paginate::Content* (JPC) is a plugin for [Jekyll](https://jekyllrb.com/) that automatically splits pages, posts, and other content into one or more pages. This can be at points where e.g. `<!--page-->` is inserted, or at the &lt;h1&gt; to &lt;h6&gt; headers. It mimics [jekyll-paginate-v2](https://github.com/sverrirs/jekyll-paginate-v2) (JPv2) naming conventions and features, so if you use that, you will be in familiar territory.
 
@@ -127,6 +127,7 @@ See other [demos](#demos).
 
 1. You want to split long posts and pages/articles/reviews, etc. into multiple pages, e.g. chapters;
 1. You want to offer faster loading times to your readers;
+1. You wamt to make slide/presentation-type content;
 1. You want more ad revenue from your Jekyll site;
 1. You wanna be the cool kid. :stuck_out_tongue:
 
@@ -181,6 +182,7 @@ paginate_content:
                                      # e.g. /borg7of9.html
 
   single_page: '/full.html'          # Relative path to the single-page view; default: "/view-all/"
+                                     # Set to "" for no single page view
 
   minimum: 1000                      # Minimum number of characters (including markup) in a page
                                      # for automatic header splitting. 
@@ -821,9 +823,9 @@ What about `canonical` for JPv2-generated pages? Unless you have a "view-all" pa
 
 ## Demos
 
-1. TL;DR demos: [manual](https://ibrado.org/demos/jpc-3page-manual.md), [automatic](https://ibrado.org/demos/jpc-3page-auto.md)
+1. TL;DR demos: [manual](https://ibrado.org/demos/jpc-3page-manual/), [automatic](https://ibrado.org/demos/jpc-3page-auto/)
 1. Simple example as a [post](https://ibrado.org/2017/12/jpc-demo-post/), as an item in a [collection](https://ibrado.org/demos/jpc/), and as a [page](https://ibrado.org/jpc-demo/).
-1. [This README](https://ibrado.org/demos/jpc-readme/), autopaginated
+1. [This README](https://ibrado.org/jpc/readme/), autopaginated
 
 ## Limitations
 
