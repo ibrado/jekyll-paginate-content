@@ -4,6 +4,8 @@ module Jekyll
   module Paginate::Content
 
     class Generator < Jekyll::Generator
+      safe true
+
       def generate(site)
         start_time = Time.now
 
