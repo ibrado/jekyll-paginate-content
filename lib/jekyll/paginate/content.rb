@@ -327,7 +327,7 @@ module Jekyll
         # Restore original header text
         content.gsub!(/\$\$_(.*?)_\$\$/m, '\1')
 
-        @toc = toc
+        @toc = toc.empty? ? nil : toc
 
         # Handle splitting by headers, h1-h6
         if m = /^h([1-6])$/.match(sep)
@@ -593,8 +593,12 @@ module Jekyll
           _adjust_links(new_items, item.content, a_locations, i+1)
 
           # Adjust the TOC relative to this page
-          toc = @toc.dup
-          _adjust_links(new_items, toc, a_locations, i+1)
+          if @toc
+            toc = @toc.dup
+            _adjust_links(new_items, toc, a_locations, i+1)
+          else
+            toc = nil
+          end
 
           item.pager.toc = { 'simple' => toc }
 
