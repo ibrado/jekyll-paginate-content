@@ -429,7 +429,7 @@ module Jekyll
         pages.each do |page|
           # TODO: Optimize this regex
           page.scan(/<a\s+name=['"](\S+)['"]>[^<]*<\/a>|<[^>]*id=['"](\S+)['"][^>]*>|{:.*id=['"](\S+)['"][^}]*}/i).each do |a|
-            anchor = a[1] || a[2] || a[3]
+            anchor = a[0] || a[1] || a[2]
             a_locations[anchor] = i
           end
           i += 1
