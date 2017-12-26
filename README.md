@@ -302,7 +302,7 @@ paginate_content:
 ```
 ## Splitting content
 
-How your files are split depends on your `separator`:
+How your content is split depends on your `separator`:
 
 ### Manual mode
 
@@ -431,7 +431,7 @@ The tags, categories, and `hidden` are set up this way to avoid duplicate counts
 
 ### Setting custom properties
 
-`paginate_content` in `_config.yml` has a `properties` option:
+`paginate_content` has a `properties` option:
 
 ```yaml
 paginate_content:
@@ -745,7 +745,7 @@ The difference between this and the one built into [kramdown](https://kramdown.g
 
 ### Excluding sections
 
-Should you want some fields excluded from the Table Of Contents, add them to the `toc_exclude` option in your site configuration or content front-matter:
+Should you want some sections excluded from the Table Of Contents, add them to the `toc_exclude` option in your site configuration or content front-matter:
 
 ```yaml
 paginate_content:
