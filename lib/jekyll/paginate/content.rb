@@ -626,46 +626,48 @@ module Jekyll
 
         # Setup single-page view
 
-        if @collection == "pages"
-          single = Page.new(item, @site, dirname, item.name)
-        else
-          single = Document.new(item, @site, @collection)
-        end
+        if !@config[:single_page].empty?
+          if @collection == "pages"
+            single = Page.new(item, @site, dirname, item.name)
+          else
+            single = Document.new(item, @site, @collection)
+          end
 
-        _set_properties(item, single, 'all', user_props)
-        _set_properties(item, single, 'single', user_props)
+          _set_properties(item, single, 'all', user_props)
+          _set_properties(item, single, 'single', user_props)
 
-        single.data['pagination_info'] = {
-          'type' => 'single',
-          'id' => id
-        }
-
-        # Restore original properties for these
-        single.data['permalink'] = single_page
-        single.data['layout'] = item.data['layout']
-        single.data['date'] = item.data['date']
-        single.data['title'] = item.data['title']
-
-        # Just some limited data for the single page
-        seo = @config[:seo_canonical] ?
-          _seo('canonical', site_url + single_page) : ""
-
-        single_paginator = {
-          'first_page_path' => first_page_path,
-          'total_pages' => total_pages,
-          'toc' => {
-            'simple' => @toc
-          },
-          'seo' => {
-            'links' => seo,
-            'canonical' => seo
+          single.data['pagination_info'] = {
+            'type' => 'single',
+            'id' => id
           }
-        }
 
-        single.pager = Pager.new(single_paginator)
-        single.content = item.content
+          # Restore original properties for these
+          single.data['permalink'] = single_page
+          single.data['layout'] = item.data['layout']
+          single.data['date'] = item.data['date']
+          single.data['title'] = item.data['title']
 
-        new_items << single
+          # Just some limited data for the single page
+          seo = @config[:seo_canonical] ?
+            _seo('canonical', site_url + single_page) : ""
+
+          single_paginator = {
+            'first_page_path' => first_page_path,
+            'total_pages' => total_pages,
+            'toc' => {
+              'simple' => @toc
+            },
+            'seo' => {
+              'links' => seo,
+              'canonical' => seo
+            }
+          }
+
+          single.pager = Pager.new(single_paginator)
+          single.content = item.content
+
+          new_items << single
+        end
 
         @items = new_items
       end
