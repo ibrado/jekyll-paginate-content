@@ -127,7 +127,7 @@ See other [demos](#demos).
 
 1. You want to split long posts and pages/articles/reviews, etc. into multiple pages, e.g. chapters;
 1. You want to offer faster loading times to your readers;
-1. You wamt to make slide/presentation-type content;
+1. You want to make slide/presentation-type content;
 1. You want more ad revenue from your Jekyll site;
 1. You wanna be the cool kid. :stuck_out_tongue:
 
