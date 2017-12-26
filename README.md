@@ -82,7 +82,7 @@ This goes into the bottom of all pages.
 
 [link]: #lorem
 ```
-[Live demo](https://ibrado.org/demos/jpc-3page-manual.md)
+[Live demo](https://ibrado.org/demos/jpc-3page-manual)
 
 ### Automatic, with config overrides and mixed syntax
 
@@ -119,7 +119,7 @@ What did it do?
 </div>
 ```
 
-[Live demo](https://ibrado.org/demos/jpc-3page-auto.md)
+[Live demo](https://ibrado.org/demos/jpc-3page-auto)
 
 See other [demos](#demos).
 
@@ -860,3 +860,4 @@ Everyone interacting in the Jekyll::Paginate::Content project's codebases, issue
 [Jekyll Stickyposts Plugin](https://github.com/ibrado/jekyll-stickyposts) - Move/pin posts tagged `sticky: true` before all others. Sorting on custom fields supported; collection and paginator friendly.
 
 [Jekyll Tweetsert Plugin](https://github.com/ibrado/jekyll-tweetsert) - Turn tweets into Jekyll posts. Multiple timelines, filters, hashtags, automatic category/tags, and more!
+
