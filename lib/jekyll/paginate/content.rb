@@ -70,6 +70,8 @@ module Jekyll
 
         # Run through each specified collection
 
+        total_skipped = 0
+
         collections.each do |collection|
           if collection == "pages"
             items = site.pages
@@ -96,6 +98,11 @@ module Jekyll
 
           process.each do |item|
             paginator = Paginator.new(site, collection, item, @config)
+            if paginator.skipped
+              debug "[#{collection}] \"#{item.data['title']}\" skipped"
+              total_skipped += 1
+            end
+
             next if paginator.items.empty?
 
             debug "[#{collection}] \"#{item.data['title']}\", #{paginator.items.length-1}+1 pages"
@@ -119,6 +126,12 @@ module Jekyll
             info "[#{collection}] Generated #{total_parts}+#{total_copies} pages"
           end
         end
+
+        if total_skipped > 0
+          s = (total_skipped == 1 ? '' : 's')
+          info "Skipped #{total_skipped} unchanged item#{s}"
+        end
+
         runtime = "%.6f" % (Time.now - start_time).to_f
         debug "Runtime: #{runtime}s"
       end
@@ -232,10 +245,13 @@ module Jekyll
     end
 
     class Paginator
+      attr_accessor :skipped
+
       def initialize(site, collection, item, config)
         @site = site
         @collection = collection
         @items = []
+        @skipped = false
 
         source = item.path
         html = item.destination('')
@@ -252,6 +268,8 @@ module Jekyll
           @config = final_config
 
           self.split(item)
+        else
+          @skipped = true
         end
       end
 
