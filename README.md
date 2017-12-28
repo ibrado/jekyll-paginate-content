@@ -131,6 +131,10 @@ See other [demos](#demos).
 1. You want more ad revenue from your Jekyll site;
 1. You wanna be the cool kid. :stuck_out_tongue:
 
+## What's new?
+
+v1.0.2 Don't regenerate unnecessarily
+
 ## Installation
 
 Add the gem to your application's Gemfile:
