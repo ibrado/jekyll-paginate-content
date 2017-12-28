@@ -95,13 +95,13 @@ module Jekyll
           end
 
           process.each do |item|
-            pager = Paginator.new(site, collection, item, @config)
-            next if pager.items.empty?
+            paginator = Paginator.new(site, collection, item, @config)
+            next if paginator.items.empty?
 
-            debug "[#{collection}] \"#{item.data['title']}\", #{pager.items.length-1}+1 pages"
-            total_parts += pager.items.length-1;
+            debug "[#{collection}] \"#{item.data['title']}\", #{paginator.items.length-1}+1 pages"
+            total_parts += paginator.items.length-1;
             total_copies += 1
-            new_items << pager.items
+            new_items << paginator.items
             old_items << item
           end
 
@@ -235,19 +235,24 @@ module Jekyll
       def initialize(site, collection, item, config)
         @site = site
         @collection = collection
-
-        final_config = {}.merge(config)
-        if item.data.has_key?('paginate_content')
-          item.data['paginate_content'].each do |k,v|
-            s = k.downcase.strip.to_sym
-            final_config[s] = v
-          end
-        end
-
-        @config = final_config
-
         @items = []
-        self.split(item)
+
+        source = item.path
+        html = item.destination('')
+
+        if !File.exist?(html) || (File.mtime(html) < File.mtime(source))
+          final_config = {}.merge(config)
+          if item.data.has_key?('paginate_content')
+            item.data['paginate_content'].each do |k,v|
+              s = k.downcase.strip.to_sym
+              final_config[s] = v
+            end
+          end
+
+          @config = final_config
+
+          self.split(item)
+        end
       end
 
       def items
