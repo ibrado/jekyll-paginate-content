@@ -71,6 +71,7 @@ module Jekyll
         # Run through each specified collection
 
         total_skipped = 0
+        total_single = 0
 
         collections.each do |collection|
           if collection == "pages"
@@ -101,6 +102,10 @@ module Jekyll
             if paginator.skipped
               debug "[#{collection}] \"#{item.data['title']}\" skipped"
               total_skipped += 1
+
+            elsif paginator.items.empty?
+              total_single += 1
+              debug "[#{collection}] \"#{item.data['title']}\" is a single page"
             end
 
             next if paginator.items.empty?
@@ -130,6 +135,11 @@ module Jekyll
         if total_skipped > 0
           s = (total_skipped == 1 ? '' : 's')
           info "Skipped #{total_skipped} unchanged item#{s}"
+        end
+
+        if total_single  > 0
+          s = (total_single == 1 ? '' : 's')
+          info "#{total_skipped} page#{s} could not be split"
         end
 
         runtime = "%.6f" % (Time.now - start_time).to_f
@@ -253,7 +263,8 @@ module Jekyll
         @items = []
         @skipped = false
 
-        source = item.path
+        source_prefix = item.is_a?(Jekyll::Page) ? site.source : ''
+        source = File.join(source_prefix, item.path)
         html = item.destination('')
 
         if !File.exist?(html) || (File.mtime(html) < File.mtime(source))
@@ -266,7 +277,6 @@ module Jekyll
           end
 
           @config = final_config
-
           self.split(item)
         else
           @skipped = true
@@ -279,7 +289,6 @@ module Jekyll
 
       def split(item)
         sep = @config[:separator].downcase.strip
-
         # Update the header IDs the original document
         content = item.content
 
