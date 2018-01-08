@@ -267,16 +267,16 @@ module Jekyll
         source = File.join(source_prefix, item.path)
         html = item.destination('')
 
-        if !File.exist?(html) || (File.mtime(html) < File.mtime(source))
-          final_config = {}.merge(config)
-          if item.data.has_key?('paginate_content')
-            item.data['paginate_content'].each do |k,v|
-              s = k.downcase.strip.to_sym
-              final_config[s] = v
-            end
+        final_config = {}.merge(config)
+        if item.data.has_key?('paginate_content')
+          item.data['paginate_content'].each do |k,v|
+            s = k.downcase.strip.to_sym
+            final_config[s] = v
           end
+        end
+        @config = final_config
 
-          @config = final_config
+        if @config['force'] || (!File.exist?(html) || (File.mtime(html) < File.mtime(source)))
           self.split(item)
         else
           @skipped = true
