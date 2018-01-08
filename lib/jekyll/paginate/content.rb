@@ -139,7 +139,7 @@ module Jekyll
 
         if total_single  > 0
           s = (total_single == 1 ? '' : 's')
-          info "#{total_skipped} page#{s} could not be split"
+          info "#{total_single} page#{s} could not be split"
         end
 
         runtime = "%.6f" % (Time.now - start_time).to_f
