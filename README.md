@@ -133,6 +133,7 @@ See other [demos](#demos).
 
 ## What's new?
 
+v1.0.3 Bugfixes; force option
 v1.0.2 Don't regenerate unnecessarily
 
 ## Installation
@@ -172,6 +173,8 @@ paginate_content:
   auto: true                         # Set to true to search for the page separator even if you
                                      #   don't set paginate: true in the front-matter
                                      # Default: false
+
+  force: true                        # Set to true to force regeneration of pages; default: false
 
   separator: "<!--split-->"          # The page separator; default: "<!--page-->"
                                      # Can be "h1" to "h6" for automatic splitting
