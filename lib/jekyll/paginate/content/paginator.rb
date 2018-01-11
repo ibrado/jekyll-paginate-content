@@ -23,7 +23,7 @@ module Jekyll
         end
         @config = final_config
 
-        if @config['force'] || (!File.exist?(html) || (File.mtime(html) < File.mtime(source)))
+        if @config[:force] || (!File.exist?(html) || (File.mtime(html) < File.mtime(source)))
           self.split(item)
         else
           @skipped = true
