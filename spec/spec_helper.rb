@@ -1,5 +1,5 @@
 require "bundler/setup"
-require "jekyll/paginate/content"
+require "jekyll-paginate-content"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
