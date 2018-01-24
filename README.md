@@ -133,7 +133,10 @@ See other [demos](#demos).
 
 ## What's new?
 
+v1.0.4 Allow inclusion in `_config.yml` plugins
+
 v1.0.3 Bugfixes; force option
+
 v1.0.2 Don't regenerate unnecessarily
 
 ## Installation
@@ -196,7 +199,6 @@ paginate_content:
                                      #   If a section is too short, the next section will be merged
                                      # Default: none
                                      
-
   title: ':title - :num/:max'        # Title format of the split pages, default: original title
                                      #   :num and :max are as in permalink,
                                      #   :title is the original title
@@ -865,7 +867,9 @@ Everyone interacting in the Jekyll::Paginate::Content project's codebases, issue
 
 ## Also by the Author
 
-[Jekyll Stickyposts Plugin](https://github.com/ibrado/jekyll-stickyposts) - Move/pin posts tagged `sticky: true` before all others. Sorting on custom fields supported; collection and paginator friendly.
+[Jekyll::Stickyposts](https://github.com/ibrado/jekyll-stickyposts) - Move/pin posts tagged `sticky: true` before all others. Sorting on custom fields supported; collection and paginator friendly.
 
-[Jekyll Tweetsert Plugin](https://github.com/ibrado/jekyll-tweetsert) - Turn tweets into Jekyll posts. Multiple timelines, filters, hashtags, automatic category/tags, and more!
+[Jekyll::Tweetsert](https://github.com/ibrado/jekyll-tweetsert) - Turn tweets into Jekyll posts. Multiple timelines, filters, hashtags, automatic category/tags, and more!
+
+[Jekyll::ViewSource](https://github.com/ibrado/jekyll-viewsource) - Generate pretty or plain HTML and/or Markdown source code pages.
 
