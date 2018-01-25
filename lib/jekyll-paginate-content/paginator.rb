@@ -68,6 +68,7 @@ module Jekyll
           header = header_template.render({ "page" => item.data })
 
           next if @config[:toc_exclude] && @config[:toc_exclude].include?(header)
+          next if header == '_last_'
 
           markup = m[1].strip
 
@@ -288,7 +289,11 @@ module Jekyll
           end
 
           paginator['section'] = section
-          paginator['section_id'] = section.downcase.gsub(/[[:punct:]]/, '').gsub(/\s+/, '-')
+          if last &&  section == '_last_'
+            paginator['section_id'] = section
+          else
+            paginator['section_id'] = section.downcase.gsub(/[[:punct:]]/, '').gsub(/\s+/, '-')
+          end
 
           paginator['paginated'] = true
           paginator['page_num'] = num
@@ -359,6 +364,10 @@ module Jekyll
               'type' => first ? 'first' : ( last ? 'last' : 'part'),
               'id' => id
             }
+
+          if last && (section == "_last_")
+            page.sub!(/^\s*#+\s+_last_/, '')
+          end
 
           new_part.content = header + page + footer
 
@@ -448,6 +457,8 @@ module Jekyll
 
           single.pager = Pager.new(single_paginator)
           single.content = item.content
+
+          single.content.sub!(/^\s*#+\s+_last_/, '<a id="_last_"></a>')
 
           new_items << single
         end
