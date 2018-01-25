@@ -477,7 +477,7 @@ paginate_content:
 
 In your layout, you'd use something like
 
-```html
+```liquid
 {% if post.comments %}
    <!-- Disqus section -->
 {% endif %}
@@ -577,7 +577,7 @@ The author's `_config.yml` has the following:
 
 `x_title` saves the original title for use in social media sharing. The example below also does something similar for the URL to be shared:
 
-```
+```liquid
 {% if page.x_title %}
   {% assign share_title = page.x_title %}
 {% else %}
@@ -629,7 +629,7 @@ Let's say your document has 7 pages, and you have a `trail` as above. The pager 
 
 Here is an example adapted from [JPv2's documentation](https://github.com/sverrirs/jekyll-paginate-v2/blob/master/README-GENERATOR.md#creating-pagination-trails). Note that you don't need to prepend `site.baseurl` to `trail.path` as it is automatically added in by JPC [by default](#sitebaseurl).
 
-```
+```liquid
 {% if paginator.page_trail %}
   <ul class="pager">
   {% for trail in paginator.page_trail %}
@@ -659,7 +659,7 @@ You'll end up with something like this, for page 4:
 
 The author's own pager is a little more involved and uses some convenience fields and aliases:
 
-```html
+```liquid
 {% if paginator.page_trail %}
   <div class="pager">
     {% if paginator.is_first %}
@@ -703,7 +703,7 @@ This results in a pager that looks like this:
 
 You may also want to add a page "flipper" that uses section names:
 
-```html
+```liquid
 <!--page_footer-->
 <div>
   {% if paginator.previous_section %}
@@ -718,7 +718,7 @@ You may also want to add a page "flipper" that uses section names:
 
 Should there be no available section name, "Untitled" will be returned. You can then handle it like so:
 
-```html
+```liquid
 {% if paginator.previous_section == "Untitled" %}
   Previous
 {% else %}
@@ -728,7 +728,7 @@ Should there be no available section name, "Untitled" will be returned. You can 
 
 Of course, you always have the option of adding some navigational cues to your content:
 
-```html
+```liquid
 {% if paginator.paginated %}
   <a href="{{ paginator.next_page_path }}">On to the next chapter...</a>
 {% endif %}
@@ -740,13 +740,13 @@ This text will not appear in the single-page view.
 
 JPC automatically generates a Table of Contents for you. To use this from within your content, simply insert the following:
 
-```
+```liquid
   {{ paginator.toc.simple }}
 ```
 
 If you want to use this from an HTML layout, e.g. an included `sidebar.html`:
 
-```
+```liquid
   {{ paginator.toc.simple | markdownify }}
 ```
 
@@ -794,7 +794,7 @@ Now that your site features split pages (*finally!*), how do you optimize it for
 
 You could simply add the following somewhere inside the <tt>&lt;head&gt;</tt> of your document:
 
-```
+```liquid
 {{ paginator.seo.links }}
 ```
 
@@ -812,7 +812,7 @@ It will produce up to three lines, like so (assuming you are on page 5):
 
 It would be better to use the following approach, though:
 
-```html
+```liquid
 {% unless paginator %}
   <link rel="canonical" href="{{ site.canonical }}{{ site.baseurl }}{{ page.url }}" />
 {% endunless %}
