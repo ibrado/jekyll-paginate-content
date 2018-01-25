@@ -765,15 +765,7 @@ The generated section ids follow the usual convention:
 
 ### Last section
 
-When using JPC to generate slides, the following workaround can be used for the last slide (usually a "thank you" or contact info slide):
-
-```markdown
-## _last_
-
-# Thank you!
-```
-
-That is, literally name the last slide/section as `_last_` to bypass the need for a slide title and to hide it from the TOC.
+When using JPC to generate slides, you may use `_last_` as the title for the last slide (usually a "thank you" or contact info slide). It will be removed and hidden from the TOC.
 
 ## Search Engine Optimization (SEO)
 
