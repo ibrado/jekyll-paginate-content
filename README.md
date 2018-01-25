@@ -53,14 +53,7 @@ layout: page
 paginate: true
 ---
 
-{% if paginator.paginated %}
-  <a href="{{ paginator.single_page }}">View as a single page</a>
-{% elsif paginator %}
-  <a href="{{ paginator.first_path }}">View as {{ paginator.total_pages }} pages</a>
-{% endif %}
-
 This shows up at the top of all pages.
-
 <!--page_header-->
 
 This is page 1 of the JPC example.
@@ -69,10 +62,6 @@ This is page 1 of the JPC example.
 
 <!--page-->
 This is page 2 with a [link] to the first page which works in single or paged view.
-
-{% if paginator.paginated %}
-<p><a href="{{ paginator.next_path }}">Go on to page {{ paginator.next_page }}</a></p>
-{% endif %}
 
 <!--page-->
 This is the last page.
@@ -84,11 +73,11 @@ This goes into the bottom of all pages.
 ```
 [Live demo](https://ibrado.org/demos/jpc-3page-manual)
 
-### Automatic, with config overrides and mixed syntax
+### Automatic, with config overrides
 
 ```markdown
 ---
-title: "JPC demo: 3-page auto, mixed syntax"
+title: "JPC demo: 3-page auto"
 layout: page
 paginate: true
 paginate_content:
@@ -97,26 +86,18 @@ paginate_content:
   permalink: /page:numof:max.html
 ---
 
-<h2>Introduction</h2>
+# Introduction
+
 Hello!
 
 ## What did something?
+
 The quick brown fox...
 
-What did it do?
----------------
+## What did it do?
+
 ...jumped over the lazy dog.
 
-<!--page_footer-->
-<div>
-{% if paginator.prev_section %}
-  &laquo; <a href="{{ paginator.prev_path }}">{{ paginator.prev_section }}</a>
-{% endif %}
-{% if paginator.prev_section and paginator.next_section %} | {% endif %}
-{% if paginator.next_section %}
-  <a href="{{ paginator.next_path }}">{{ paginator.next_section }}</a> &raquo;
-{% endif %}
-</div>
 ```
 
 [Live demo](https://ibrado.org/demos/jpc-3page-auto)
