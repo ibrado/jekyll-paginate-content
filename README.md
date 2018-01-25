@@ -400,7 +400,6 @@ These properties/fields are available to your layouts and content via the `pagin
 | `page`               | `page_num`      | Current page number                 |
 | `page_path`          |                 | Path to the current page            |
 | `page_trail`         |                 | Page trail, see [below](#pagination-trails)    |
-| `paginated`          | `activated`     | `true` if this is a partial page    |
 | `total_pages`        | `pages`         | Total number of pages               |
 |                      |                 |                                     |
 | `single_page`        | `view_all`      | Path to the original/full page      |
@@ -408,9 +407,11 @@ These properties/fields are available to your layouts and content via the `pagin
 | `toc`                |                 | Table Of Contents generator, see [below](#table-of-contents-toc)
 |                      |                 |                                     |
 | `section`            |                 | Text of the first header (&lt;h1&gt; etc.) on this page
+| `section_id`         |                 | The header id (`<a name>`) of this section
 | `previous_section`   | `prev_section`  | Ditto for the previous page         |
 | `next_section`       |                 | Ditto for the next page             |
 |                      |                 |                                     |
+| `paginated`          | `activated`     | `true` if this is a partial page    |
 | `has_next`           |                 | `true` if there is a next page      |
 | `has_previous`       | `has_prev`      | `true` if there is a previous page  |
 | `is_first`           |                 | `true` if this is the first page    |
@@ -628,7 +629,7 @@ Let's say your document has 7 pages, and you have a `trail` as above. The pager 
 
 Here is an example adapted from [JPv2's documentation](https://github.com/sverrirs/jekyll-paginate-v2/blob/master/README-GENERATOR.md#creating-pagination-trails). Note that you don't need to prepend `site.baseurl` to `trail.path` as it is automatically added in by JPC [by default](#sitebaseurl).
 
-```html
+```
 {% if paginator.page_trail %}
   <ul class="pager">
   {% for trail in paginator.page_trail %}

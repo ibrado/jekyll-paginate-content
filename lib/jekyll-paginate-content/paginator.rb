@@ -288,6 +288,7 @@ module Jekyll
           end
 
           paginator['section'] = section
+          paginator['section_id'] = section.downcase.gsub(/[[:punct:]]/, '').gsub(/\s+/, '-')
 
           paginator['paginated'] = true
           paginator['page_num'] = num

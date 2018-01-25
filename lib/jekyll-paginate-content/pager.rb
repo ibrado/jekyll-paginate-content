@@ -10,7 +10,7 @@ module Jekyll
         :page_trail, :pages, :paginated, :previous_is_first,
         :prev_is_first, :previous_page, :prev_page, :previous_page_path,
         :previous_path, :prev_path, :prev_section, :previous_section,
-        :section, :seo, :single_page, :toc, :total_pages, :view_all
+        :section, :section_id, :seo, :single_page, :toc, :total_pages, :view_all
 
       def initialize(data)
         data.each do |k,v|
@@ -45,6 +45,7 @@ module Jekyll
           'seo' => seo,
           'single_page' => single_page,
           'section' => section,
+          'section_id' => section_id,
           'toc' => toc,
           'next_section' => next_section,
           'previous_section' => previous_section,
