@@ -108,11 +108,13 @@ See other [demos](#demos).
 
 1. You want to split long posts and pages/articles/reviews, etc. into multiple pages, e.g. chapters;
 1. You want to offer faster loading times to your readers;
-1. You want to make slide/presentation-type content;
+1. You want to make slide/presentation-type content (see [demo](https://ibrado.org/jpc/slides/)!)
 1. You want more ad revenue from your Jekyll site;
 1. You wanna be the cool kid. :stuck_out_tongue:
 
 ## What's new?
+
+v1.1.0 Layout overrides for e.g. slides; bugfixes
 
 v1.0.4 Allow inclusion in `_config.yml` plugins
 
@@ -818,6 +820,7 @@ What about `canonical` for JPv2-generated pages? Unless you have a "view-all" pa
 1. TL;DR demos: [manual](https://ibrado.org/demos/jpc-3page-manual/), [automatic](https://ibrado.org/demos/jpc-3page-auto/)
 1. Simple example as a [post](https://ibrado.org/2017/12/jpc-demo-post/), as an item in a [collection](https://ibrado.org/demos/jpc/), and as a [page](https://ibrado.org/jpc-demo/).
 1. [This README](https://ibrado.org/jpc/readme/), autopaginated
+1. [Simple Slides in Jekyll](https://ibrado.org/jpc/slides/)
 
 ## Limitations
 
