@@ -340,9 +340,8 @@ module Jekyll
           _set_properties(item, new_part, 'part', user_props) if !first && !last
 
           # Don't allow these to be overriden,
-          # i.e. set/reset layout, date, title, permalink
+          # i.e. set/reset date, title, permalink
 
-          new_part.data['layout'] = item.data['layout']
           new_part.data['date'] = item.data['date']
           new_part.data['permalink'] = plink
 

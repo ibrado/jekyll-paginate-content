@@ -486,7 +486,7 @@ The single-page view would then show the [Disqus](https://disqus.com/) comments 
 
 ### Overriding and restoring properties
 
-You can set almost any front-matter property via the `properties` section, except for `title`, `layout`, `date`, `permalink`, and `pagination_info`. Use with caution.
+You can set almost any front-matter property via the `properties` section, except for `title`, `date`, `permalink`, and `pagination_info`. Use with caution.
 
 #### Special values
 
