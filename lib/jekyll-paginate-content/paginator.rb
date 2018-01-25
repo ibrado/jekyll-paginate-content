@@ -63,6 +63,10 @@ module Jekyll
         content.scan(/(^|\r?\n)((#+)\s*([^\r\n#]+)#*\r?\n|([^\r\n]+)\r?\n(=+|\-{4,})\s*\r?\n|<h([1-6])[^>]*>([^\r\n<]+)(\s*<\/h\7>))/mi).each do |m|
           header = m[3] || m[4] || m[7]
 
+          # Parse any Liquid page variables here so the ids also get the resulting text
+          header_template = Liquid::Template.parse(header)
+          header = header_template.render({ "page" => item.data })
+
           next if @config[:toc_exclude] && @config[:toc_exclude].include?(header)
 
           markup = m[1].strip
