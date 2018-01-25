@@ -33,6 +33,7 @@
     + [Page flipper](#page-flipper)
   * [Table Of Contents (TOC)](#table-of-contents-toc)
     + [Excluding sections](#excluding-sections)
+    + [Last section](#last-section)
   * [Search Engine Optimization (SEO)](#search-engine-optimization-seo)
     + [Unified approach](#unified-approach)
   * [Demos](#demos)
@@ -761,6 +762,18 @@ The generated section ids follow the usual convention:
 1. Convert multiple spaces to a single space
 1. Convert spaces to dashes
 1. If that id already exists, add "-1", "-2", etc. until the id is unique
+
+### Last section
+
+When using JPC to generate slides, the following workaround can be used for the last slide (usually a "thank you" or contact info slide):
+
+```markdown
+## _last_
+
+# Thank you!
+```
+
+That is, literally name the last slide/section as `_last_` to bypass the need for a slide title and to hide it from the TOC.
 
 ## Search Engine Optimization (SEO)
 
