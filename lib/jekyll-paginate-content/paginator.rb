@@ -517,7 +517,7 @@ module Jekyll
 
       def _set_properties(original, item, stage, user_props = nil)
         stage_props = {}
-        stage_props.merge!(@config[:properties][stage])
+        stage_props.merge!(@config[:properties][stage] || {})
 
         if user_props && user_props.has_key?(stage)
           stage_props.merge!(user_props[stage])
