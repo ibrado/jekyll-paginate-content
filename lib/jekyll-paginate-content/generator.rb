@@ -11,6 +11,7 @@ module Jekyll
         return unless sconfig["enabled"].nil? || sconfig["enabled"]
 
         @debug = sconfig["debug"]
+        @force = !site.incremental?
 
         sconfig['collection'] = sconfig['collection'].split(/,\s*/) if sconfig['collection'].is_a?(String)
 
@@ -62,7 +63,9 @@ module Jekyll
           :toc_exclude => sconfig['toc_exclude'],
 
           :properties => properties,
-          :user_props => sconfig['properties'] || {}
+          :user_props => sconfig['properties'] || {},
+
+          :force => @force
         }
 
         # Run through each specified collection

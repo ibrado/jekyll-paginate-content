@@ -371,6 +371,8 @@ module Jekyll
 
           new_part.content = header + page + footer
 
+          new_part.data['regenerate'] = false;
+
           new_items << new_part
 
           num += 1
@@ -438,6 +440,7 @@ module Jekyll
           single.data['layout'] = item.data['layout']
           single.data['date'] = item.data['date']
           single.data['title'] = item.data['title']
+          single.data['regenerate'] = false;
 
           # Just some limited data for the single page
           seo = @config[:seo_canonical] ?
