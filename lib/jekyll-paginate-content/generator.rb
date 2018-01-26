@@ -11,7 +11,7 @@ module Jekyll
         return unless sconfig["enabled"].nil? || sconfig["enabled"]
 
         @debug = sconfig["debug"]
-        @force = !site.incremental?
+        @force = @force.nil? || !site.incremental?
 
         sconfig['collection'] = sconfig['collection'].split(/,\s*/) if sconfig['collection'].is_a?(String)
 
