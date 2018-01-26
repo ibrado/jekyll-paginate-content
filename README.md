@@ -27,13 +27,14 @@
     + [Overriding and restoring properties](#overriding-and-restoring-properties)
       - [Special values](#special-values)
     + [Default properties](#default-properties)
-    + [Example](#example)
+    + [Example: blog](#example-blog)
+    + [Example: slides/presentation](#example-slidespresentation)
+      - [Last slide](#last-slide)
   * [Pagination trails](#pagination-trails)
     + [Usage](#usage-1)
     + [Page flipper](#page-flipper)
   * [Table Of Contents (TOC)](#table-of-contents-toc)
     + [Excluding sections](#excluding-sections)
-    + [Last section](#last-section)
   * [Search Engine Optimization (SEO)](#search-engine-optimization-seo)
     + [Unified approach](#unified-approach)
   * [Demos](#demos)
@@ -526,7 +527,7 @@ For reference, the default properties effectively map out to:
         type: 'single'
 ```
 
-### Example
+### Example: blog
 
 The author's `_config.yml` has the following:
 
@@ -574,6 +575,52 @@ The author's `_config.yml` has the following:
   {% assign share_url = page.url %}
 {% endif %}
 ```
+
+### Example: slides/presentation
+
+JPC can be used to generate slides as well as a detailed document from the same source Markdown, i.e.
+
+```liquid
+{% if paginator.paginated %}
+  // Content that only shows up in the slides
+{% else %}
+  // Content that only shows up in the single/details page.
+{% endif %}
+```
+
+Or alternatively,
+
+```liquid
+{% if paginator.paginated %}
+  // Content that only shows up in the slides
+{% endif %}
+```
+
+and
+
+```liquid
+{% unless paginator.paginated %}
+  // Content that only shows up in the single/details page.
+{% endif %}
+```
+
+Here's an example configuration:
+
+```yaml
+  properties:
+    all:
+      layout: slides
+    single:
+      layout: $
+```
+
+This makes all pages except the single-page view use the `slides` layout. The latter will use the original layout.
+
+#### Last slide
+
+When using JPC to generate slides, you may use `_last_` as the title for the last slide (usually a "thank you" or contact info slide). It will be removed and hidden from the TOC.
+
+The [demos](#demos) include a sample presentation.
 
 ## Pagination trails
 
@@ -762,10 +809,6 @@ The generated section ids follow the usual convention:
 1. Convert multiple spaces to a single space
 1. Convert spaces to dashes
 1. If that id already exists, add "-1", "-2", etc. until the id is unique
-
-### Last section
-
-When using JPC to generate slides, you may use `_last_` as the title for the last slide (usually a "thank you" or contact info slide). It will be removed and hidden from the TOC.
 
 ## Search Engine Optimization (SEO)
 
