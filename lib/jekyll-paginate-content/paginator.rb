@@ -10,23 +10,34 @@ module Jekyll
         @items = []
         @skipped = false
 
-        source_prefix = item.is_a?(Jekyll::Page) ? site.source : ''
+        is_page = item.is_a?(Jekyll::Page)
+
+        source_prefix = is_page ? site.source : ''
         source = File.join(source_prefix, item.path)
         html = item.destination('')
 
-        final_config = {}.merge(config)
+        final_config = config.dup
         if item.data.has_key?('paginate_content')
+          fm_config = {}
           item.data['paginate_content'].each do |k,v|
             s = k.downcase.strip.to_sym
-            final_config[s] = v
+            fm_config[s] = v
           end
+
+          Jekyll::Utils.deep_merge_hashes!(final_config, fm_config)
         end
+
         @config = final_config
 
-        if @config[:force] || (!File.exist?(html) || (File.mtime(html) < File.mtime(source)))
-          self.split(item)
-        else
+        if !@config[:force] && (cached_items = Generator::Cache.items(site, item))
+          @items = cached_items
           @skipped = true
+
+        else
+          split_pages = self.split(item)
+
+          # Store for later retrieval during regeneration
+          Generator::Cache.items(site, item, split_pages)
         end
       end
 
@@ -36,6 +47,7 @@ module Jekyll
 
       def split(item)
         sep = @config[:separator].downcase.strip
+
         # Update the header IDs the original document
         content = item.content
 
@@ -261,7 +273,7 @@ module Jekyll
               page_data = item.data
             end
 
-            paginator.merge!(page_data)
+            Jekyll::Utils.deep_merge_hashes!(paginator, page_data)
             new_part = Page.new(item, @site, dirname, filename)
           else
             new_part = Document.new(item, @site, @collection)
@@ -371,10 +383,7 @@ module Jekyll
 
           new_part.content = header + page + footer
 
-          new_part.data['regenerate'] = false;
-
           new_items << new_part
-
           num += 1
         end
 
@@ -535,11 +544,10 @@ module Jekyll
       end
 
       def _set_properties(original, item, stage, user_props = nil)
-        stage_props = {}
-        stage_props.merge!(@config[:properties][stage] || {})
+        stage_props = (@config[:properties][stage] || {}).dup
 
         if user_props && user_props.has_key?(stage)
-          stage_props.merge!(user_props[stage])
+          Jekyll::Utils.deep_merge_hashes!(stage_props, user_props[stage])
         end
 
         return if stage_props.empty?
@@ -559,12 +567,7 @@ module Jekyll
           end
         end
 
-        if item.respond_to?('merge_data')
-          item.merge_data!(stage_props)
-        else
-          item.data.merge!(stage_props)
-        end
-
+        Jekyll::Utils.deep_merge_hashes!(item.data, stage_props)
       end
 
       def _adjust_links(new_items, content, a_locations, num)
@@ -587,6 +590,7 @@ module Jekyll
         end
 
       end
+
     end
 
   end

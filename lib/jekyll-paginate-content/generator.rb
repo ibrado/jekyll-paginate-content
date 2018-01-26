@@ -11,7 +11,7 @@ module Jekyll
         return unless sconfig["enabled"].nil? || sconfig["enabled"]
 
         @debug = sconfig["debug"]
-        @force = @force.nil? || !site.incremental?
+        @force = @force.nil?
 
         sconfig['collection'] = sconfig['collection'].split(/,\s*/) if sconfig['collection'].is_a?(String)
 
@@ -110,9 +110,12 @@ module Jekyll
 
             next if paginator.items.empty?
 
-            debug "[#{collection}] \"#{item.data['title']}\", #{paginator.items.length-1}+1 pages"
-            total_parts += paginator.items.length-1;
-            total_copies += 1
+            if !paginator.skipped && paginator.items.length > 1
+              debug "[#{collection}] \"#{item.data['title']}\", #{paginator.items.length-1}+1 pages"
+              total_parts += paginator.items.length-1;
+              total_copies += 1
+            end
+
             new_items << paginator.items
             old_items << item
           end
@@ -128,7 +131,7 @@ module Jekyll
               items << new_item
             end
 
-            info "[#{collection}] Generated #{total_parts}+#{total_copies} pages"
+            info "[#{collection}] Generated #{total_parts}+#{total_copies} pages" if total_copies > 0
           end
         end
 
@@ -139,7 +142,7 @@ module Jekyll
 
         if total_single  > 0
           s = (total_single == 1 ? '' : 's')
-          info "#{total_single} page#{s} could not be split"
+          info "#{total_single} item#{s} could not be split (no separators?)"
         end
 
         runtime = "%.6f" % (Time.now - start_time).to_f
