@@ -13,10 +13,8 @@ module Jekyll
         @debug = sconfig["debug"]
         @force = @force.nil?
 
-        sconfig['collection'] = sconfig['collection'].split(/,\s*/) if sconfig['collection'].is_a?(String)
-
-        collections = [ sconfig['collection'], sconfig["collections"] ].flatten.compact.uniq;
-        collections = [ "posts", "pages" ] if collections.empty?
+        collections = config_values(sconfig, 'collection')
+        debug "Checking the following: #{collections.inspect}"
 
         # Use this hash syntax to facilite merging _config.yml overrides
         properties = {
@@ -161,6 +159,29 @@ module Jekyll
       def debug(msg)
         Jekyll.logger.warn "PaginateContent:", msg if @debug
       end
+
+      # Constructs the plural for a key
+      def plural(config_key)
+        (config_key =~ /s$/) ? config_key :
+          (config_key.dup.sub!(/y$/, 'ies') || "#{config_key}s")
+      end
+
+      # Converts a string or array to a downcased, stripped array
+      def config_array(config, key, keepcase = nil)
+        [ config[key] ].flatten.compact.uniq.map { |c|
+          c.split(/[,;]\s*/).map { |v|
+            keepcase ? v.to_s.strip : v.to_s.downcase.strip
+          }
+        }.flatten.uniq
+      end
+
+      # Merges singular and plural config values into an array
+      def config_values(config, key, keepcase = nil)
+        singular = config_array(config, key, keepcase)
+        plural = config_array(config, plural(key), keepcase)
+        [ singular, plural ].flatten.uniq
+      end
+
     end
 
 
