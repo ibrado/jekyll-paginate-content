@@ -116,7 +116,7 @@ See other [demos](#demos).
 
 ## What's new?
 
-v1.1.0 Layout overrides for e.g. slides; bugfixes
+v1.1.0 Layout overrides for e.g. slides; regenerate and other fixes
 
 v1.0.4 Allow inclusion in `_config.yml` plugins
 
