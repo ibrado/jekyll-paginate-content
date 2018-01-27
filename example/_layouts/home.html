@@ -1,0 +1,32 @@
+---
+layout: default
+---
+
+<div class="home">
+  {% if page.title %}
+    <h1 class="page-heading">{{ page.title }}</h1>
+  {% endif %}
+
+  {{ content }}
+
+  <div style="float: right; font-weight: bold">Pages are up there ^^^</div>
+
+  {% for coll in site.collections %}
+  <h2 class="post-list-heading">{{ coll.label | capitalize }}{% if coll.label != 'posts' %} collection{% endif %}</h2>
+    <ul class="post-list">
+      {% assign visible = coll.docs | where_exp: "post", "post.hidden != true" %}
+      {% for post in visible %}
+        <li>
+          {% assign date_format = site.minima.date_format | default: "%b %-d, %Y" %}
+          <span class="post-meta">{{ post.date | date: date_format }}</span>
+          <h3>
+            <a class="post-link" href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>
+          </h3>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <p class="rss-subscribe">subscribe <a href="{{ "/feed.xml" | relative_url }}">via RSS</a></p>
+  {% endfor  %}
+
+</div>

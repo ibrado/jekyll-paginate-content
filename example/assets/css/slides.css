@@ -1,0 +1,127 @@
+body {
+  font-family: 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: calc(2.6vmin);
+  color: #fff;
+}
+
+img {
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  background-color: inherit;
+}
+
+.subtitle {
+  border-top: 1px solid #888;
+  text-align: center;
+  padding-top: 10px;
+  font-size: 1em;
+  color: #eee;
+}
+
+.navigation {
+  text-align: center;
+  padding-top: 50px;
+  color: #888;
+  font-size: 0.8em;
+}
+
+.pager {
+  font-family: fixed;
+  text-align: center;
+  position: absolute;
+  left: 50px;
+  bottom: 20px;
+  color: #343;
+  font-size: calc(28px + 0.4vmin);
+}
+
+.pager a {
+  color: #588;
+}
+
+a {
+  color: #0FF;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+
+img {
+  vertical-align: middle;
+}
+
+.highlight pre {
+  font-size: 1.1em;
+  background-color: #000;
+}
+
+code.highlighter-rouge {
+  font-weight: bold;
+  color: #8dc;
+  size: 0.8em;
+  background-color: inherit;
+}
+
+.slide-box {
+  position: absolute;
+  margin: auto;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: #122b3b url(/assets/images/slidebg.png) no-repeat;
+  background-position: right bottom;
+  padding: 50px;
+  /*border: 3px solid #000;
+  border-radius: 5px;
+  box-shadow: 3px 3px #ccc;
+  max-width: 80%; 
+  min-height: 80%; */
+  width: calc(100% - 100px); /* Twice padding */
+  height: auto;
+}
+
+.content {
+  width: 90%;
+  margin: auto;
+}
+
+h1 {
+  color: #ffcc00;
+  font-family: serif;
+  text-shadow: 3px 3px #000;
+  text-align: center;
+  font-size: 4em;
+  margin-top: 25vmin;
+  margin-left: auto;
+}
+
+h2 {
+  color: #ffcc00;
+  font-family: serif;
+  text-shadow: 3px 3px #111;
+  font-size: 2.5em;
+  margin-top: 0;
+}
+
+li {
+  margin-left: calc (8px + 0.2vmin);
+  padding-bottom: 5px;
+  font-size: 1.7em;
+}
+
+.content ul li ul li {
+  font-size: 0.8em;
+}
+
+blockquote {
+  font-size: 1.7em;
+}
+
+
+.yellow {
+  color: #ffcc00;
+}

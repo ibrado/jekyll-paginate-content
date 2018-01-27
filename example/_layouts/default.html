@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="{{ page.lang | default: site.lang | default: "en" }}">
+
+  {% include head.html %}
+
+  <body>
+
+    {% include header.html %}
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <p>
+        {% if paginator.paginated %}
+          <a href="{{ paginator.single_page }}">View as a single page</a>
+        {% elsif paginator %}
+          <a href="{{ paginator.first_path }}">View as {{ paginator.total_pages }} pages</a>
+        {% endif %}
+        </p>
+
+        {% unless paginator.paginated %}
+          {% if paginator.toc.simple %}
+            <hr style="border: 0; border-bottom: 1px dashed #ccc; background: #999; margin-bottom: 10px"/>
+            {{ paginator.toc.simple | markdownify }}
+            <hr style="border: 0; border-bottom: 1px dashed #ccc; background: #999; margin-bottom: 10px"/>
+          {% endif %}
+        {% endunless  %}
+
+
+        {{ content }}
+
+        <div>
+        {% if paginator.previous_section %}
+          {% assign prev = paginator.previous_section %}
+          {% if prev == "Untitled" %}
+            {% assign prev = "Previous"%}
+          {% endif %}
+          &laquo; <a href="{{ paginator.previous_path }}">{{ prev }}</a>
+        {% endif %}
+        {% if paginator.previous_section and paginator.next_section %} | {% endif %}
+
+        {% if paginator.next_section %}
+          {% assign next = paginator.next_section %}
+          {% if next == "Untitled" %}
+            {% assign next = "Next"%}
+          {% endif %}
+
+          <a href="{{ paginator.next_path }}">{{ next }}</a> &raquo;
+        {% endif %}
+        </div>
+
+        {% if paginator.paginated and paginator.toc.simple %}
+          <hr style="border: 0; border-bottom: 1px dashed #ccc; background: #999; margin-bottom: 10px; margin-top: 100px;"/>
+          {{ paginator.toc.simple | markdownify }}
+        {% endif %}
+
+      </div>
+    </main>
+
+    {% include footer.html %}
+
+  </body>
+
+</html>

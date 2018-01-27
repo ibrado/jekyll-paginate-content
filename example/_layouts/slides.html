@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{ page.title }}</title>
+  <meta charset='utf-8'/>
+  <link href="/assets/css/syntax.css" rel="stylesheet">
+  <link href="/assets/css/slides.css" rel="stylesheet">>
+  <link href="/assets/css/fontello.css" rel="stylesheet">>
+  {% include slides.js %}
+</head>
+<body onload="setup_keypress()">
+  <div class="slide-box">
+    <div class="content">{{ content }}</div>
+    {% if paginator.page_trail %}
+    <div class="pager">
+
+      {% if paginator.is_first %}
+        <span class="pager-inactive"><i class="demo-icon icon-to-start-alt" aria-hidden="true"></i></span>
+        <span class="pager-inactive"><i class="demo-icon icon-fast-bw" aria-hidden="true"></i></span>
+      {% else %}
+        <a href="{{ paginator.first_path }}"><i class="demo-icon icon-to-start-alt" aria-hidden="true"></i></a>
+        <a href="{{ paginator.previous_path }}"><i class="demo-icon icon-fast-bw" aria-hidden="true"></i></a>
+      {% endif %} 
+
+      {% for p in paginator.page_trail %}
+        {% assign prefix = '' %}
+        {% if p.num < 10 %}
+          {% assign prefix = '0' %}
+        {% endif %}
+        {% if p.num == paginator.page %}
+          {{ prefix }}{{ p.num }} 
+        {% else %}
+          <a href="{{ p.path }}" data-toggle="tooltip" data-placement="top" title="{{ p.title }}">{{ prefix }}{{ p.num }}</a>
+        {% endif %}
+      {% endfor %}
+      {% if paginator.is_last %}
+        <span class="pager-inactive"><i class="demo-icon icon-fast-fw"></i></span>
+        <span class="pager-inactive"><i class="demo-icon icon-to-end-alt"></i></span>
+      {% else %}
+        <a href="{{ paginator.next_path }}"><i class="demo-icon icon-fast-fw" aria-hidden="true"></i></a>
+        <a href="{{ paginator.last_path }}"><i class="demo-icon icon-to-end-alt" aria-hidden="true"></i></a>
+      {% endif %} 
+    </div>
+    {% endif %}
+    </div>
+  </div>
+ </body>
+</html>
