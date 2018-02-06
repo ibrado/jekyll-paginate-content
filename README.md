@@ -288,12 +288,14 @@ You may also override `_config.yml` settings for a particular file like so:
 ---
 title: Test page
 layout: page
-paginate: true
 paginate_content:
   permalink: '/page:numof:max.html'
   single_page: '/full.html'
 ---
 ```
+
+You don't need to specify `paginate: true` if you already have `paginate_content` in your front matter.
+
 ## Splitting content
 
 How your content is split depends on your `separator`:
@@ -392,9 +394,9 @@ These properties/fields are available to your layouts and content via the `pagin
 | `toc`                |                 | Table Of Contents generator, see [below](#table-of-contents-toc)
 |                      |                 |                                     |
 | `section`            |                 | Text of the first header (&lt;h1&gt; etc.) on this page
-| `section_id`         |                 | The header id (`<a name>`) of this section
 | `previous_section`   | `prev_section`  | Ditto for the previous page         |
 | `next_section`       |                 | Ditto for the next page             |
+| `section_id`         |                 | The header id (`<a name>`) of this section
 |                      |                 |                                     |
 | `paginated`          | `activated`     | `true` if this is a partial page    |
 | `has_next`           |                 | `true` if there is a next page      |
